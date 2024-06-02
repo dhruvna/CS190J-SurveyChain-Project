@@ -6,7 +6,7 @@ contract RewardManager {
 
     function distributeRewards(uint256 _surveyId, address[] memory _participants) public {
         for (uint256 i = 0; i < _participants.length; i++) {
-            rewards[_participants[i]] += 1 ether; // Example reward logic
+            rewards[_participants[i]] += 1 ether; 
         }
     }
 
@@ -14,7 +14,9 @@ contract RewardManager {
         uint256 reward = rewards[msg.sender];
         require(reward > 0, "No rewards available");
         rewards[msg.sender] = 0;
-        payable(msg.sender).transfer(reward);
+        
+        (bool success, ) = payable(msg.sender).call{value: reward}("");
+        require(success, "Transfer failed");
     }
 
     receive() external payable {}

@@ -12,13 +12,14 @@ contract UserManagerTest is Test {
   }
 
   function testRegisterUser() public {
-    userManager.registerUser("Alice");
+    userManager.register("Alice");
     string memory username = userManager.getUsername(address(this));
     assertEq(username, "Alice");
   }
-
+  
   function testDuplicateRegisterUser() public {
-    userManager.registerUser("Alice");
-    userManager.registerUser("Bob"); // Should fail!
+    userManager.register("Alice");
+    vm.expectRevert();
+    userManager.register("Bob"); // Should fail!
   }
 }

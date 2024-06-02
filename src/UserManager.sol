@@ -9,7 +9,7 @@ contract UserManager {
 
   mapping(address => User) public users;
 
-  function registerUser(string memory _username) public {
+  function register(string memory _username) public {
     // Check if user already exists
     require(bytes(users[msg.sender].username).length == 0);
     users[msg.sender] = User(_username, msg.sender);
