@@ -32,4 +32,31 @@ contract ResponseManagerTest is Test {
         assertEq(responses.length, 1);
         assertEq(responses[0].selectedOption, 1);
     }
+
+    function testSubmitResponseSurveyExpired() public {
+        vm.warp(block.timestamp + 2 days); // Fast forward time to beyond survey expiry
+        vm.expectRevert("Survey has expired");
+        responseManager.submitResponse(0, 1);
+    }
+
+    function testSubmitResponseMaxDataPointsReached() public {
+        // Create a survey with a max of 1 data point for this test
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+        surveyManager.createSurvey("How many pets do you own?", options, block.timestamp + 1 days, 1);
+
+        // Submit the first response
+        responseManager.submitResponse(1, 1);
+
+        // Try to submit another response, which should fail
+        vm.expectRevert("Max data points reached");
+        responseManager.submitResponse(1, 2);
+    }
+
+    function testSubmitResponseInvalidOption() public {
+        vm.expectRevert("Invalid option");
+        responseManager.submitResponse(0, 5); // Option 5 does not exist
+    }
 }

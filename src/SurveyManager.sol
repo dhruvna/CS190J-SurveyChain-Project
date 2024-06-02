@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "forge-std/Test.sol";
 import "./UserManager.sol";
 
 contract SurveyManager {
@@ -11,6 +12,8 @@ contract SurveyManager {
         uint256[] options;
         uint256 expiryTimestamp;
         uint256 maxDataPoints;
+        uint256 numResponses;
+        bool isActive;
     }
 
     UserManager userManager;
@@ -38,9 +41,31 @@ contract SurveyManager {
             question: _question,
             options: _options,
             expiryTimestamp: _expiryTimestamp,
-            maxDataPoints: _maxDataPoints
+            maxDataPoints: _maxDataPoints,
+            numResponses: 0,
+            isActive: true
         });
         nextSurveyId++;
+    }
+
+    function updateSurveyDataPoints(uint256 _surveyId) external {
+        Survey storage survey = surveys[_surveyId];
+        survey.numResponses++;
+    }
+
+    function closeSurvey(uint256 _surveyId) internal {
+        Survey storage survey = surveys[_surveyId];
+        require(survey.isActive, "Survey is already closed!");
+        survey.isActive = false;
+        console.log("Survey closed: %s", survey.question);
+    }
+
+    function checkAndCloseSurvey(uint256 _surveyId) external {
+        Survey storage survey = surveys[_surveyId];
+        if (block.timestamp >= survey.expiryTimestamp || survey.numResponses >= survey.maxDataPoints) {
+            closeSurvey(_surveyId);
+        }
+        console.log("Survey checked: %s", survey.question);
     }
 
     function getSurvey(uint256 _surveyId) public view returns (Survey memory) {

@@ -12,8 +12,6 @@ contract SurveyManagerTest is Test {
     function setUp() public {
         userManager = new UserManager();
         surveyManager = new SurveyManager(address(userManager));
-
-        // Register a user for testing survey creation
     }
 
     //write test cases that intentionally fail each of the checks within createSurvey of SurveyManager.sol

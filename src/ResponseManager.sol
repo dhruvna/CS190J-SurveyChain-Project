@@ -16,21 +16,28 @@ contract ResponseManager {
   constructor(address _surveyManagerAddress) {
         surveyManager = SurveyManager(_surveyManagerAddress);
   }
-
+  
   function submitResponse(uint256 _surveyId, uint256 _selectedOption) public {
-    require(bytes(surveyManager.getSurvey(_surveyId).question).length != 0, "Survey does not exist");
+    SurveyManager.Survey memory survey = surveyManager.getSurvey(_surveyId);
+    require(block.timestamp <= survey.expiryTimestamp, "Survey has expired");
+    require(survey.numResponses < survey.maxDataPoints, "Max data points reached");
+    require(_selectedOption < survey.options.length, "Invalid option");
+    require(survey.isActive, "Survey is not active");
 
-    Response memory response = Response({
-      surveyId: _surveyId,
-      participant: msg.sender,
-      selectedOption: _selectedOption
-    });
-    surveyResponses[_surveyId].push(response);
+    surveyResponses[_surveyId].push(Response({
+            surveyId: _surveyId,
+            participant: msg.sender,
+            selectedOption: _selectedOption
+    }));
+    
+    // Update survey data point count
+    surveyManager.updateSurveyDataPoints(_surveyId);
+
+    // Check if the survey should be closed
+    surveyManager.checkAndCloseSurvey(_surveyId);
   }
 
   function getResponses(uint256 _surveyId) public view returns (Response[] memory) {
-    // Check if survey exists
-    require(surveyResponses[_surveyId].length > 0);
     return surveyResponses[_surveyId];
   }
 }
