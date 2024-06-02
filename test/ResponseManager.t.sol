@@ -18,10 +18,11 @@ contract ResponseManagerTest is Test {
 
         // Register a user and create a survey for testing response submission
         userManager.register("Alice");
-        string[] memory options = new string[](2);
-        options[0] = "Option 1";
-        options[1] = "Option 2";
-        surveyManager.createSurvey("What is your favorite color?", options, block.timestamp + 1 days, 100);
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+        surveyManager.createSurvey("What is your favorite number?", options, block.timestamp + 1 days, 100);
     }
 
     function testSubmitResponse() public {

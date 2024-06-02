@@ -8,7 +8,7 @@ contract SurveyManager {
         uint256 id;
         address creator;
         string question;
-        string[] options;
+        uint256[] options;
         uint256 expiryTimestamp;
         uint256 maxDataPoints;
     }
@@ -23,11 +23,15 @@ contract SurveyManager {
 
     function createSurvey(
         string memory _question,
-        string[] memory _options,
+        uint256[] memory _options,
         uint256 _expiryTimestamp,
         uint256 _maxDataPoints
     ) public {
         require(bytes(userManager.getUsername(msg.sender)).length != 0, "User not registered");
+        require(_options.length > 0, "Survey must have at least one option");
+        require(_expiryTimestamp > block.timestamp, "Expiry timestamp must be in the future");
+        require(_maxDataPoints > 0, "Max data points must be greater than zero");
+
         surveys[nextSurveyId] = Survey({
             id: nextSurveyId,
             creator: msg.sender,
