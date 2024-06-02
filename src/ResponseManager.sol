@@ -14,7 +14,7 @@ contract ResponseManager {
   mapping(uint256 => Response[]) public surveyResponses;
 
   constructor(address _surveyManagerAddress) {
-        surveyManager = SurveyManager(_surveyManagerAddress);
+    surveyManager = SurveyManager(_surveyManagerAddress);
   }
   
   function submitResponse(uint256 _surveyId, uint256 _selectedOption) public {
@@ -25,16 +25,18 @@ contract ResponseManager {
     require(survey.isActive, "Survey is not active");
 
     surveyResponses[_surveyId].push(Response({
-            surveyId: _surveyId,
-            participant: msg.sender,
-            selectedOption: _selectedOption
+      surveyId: _surveyId,
+      participant: msg.sender,
+      selectedOption: _selectedOption
     }));
     
     // Update survey data point count
     surveyManager.updateSurveyDataPoints(_surveyId);
 
     // Check if the survey should be closed
-    surveyManager.checkAndCloseSurvey(_surveyId);
+    if (block.timestamp >= survey.expiryTimestamp || survey.numResponses >= survey.maxDataPoints) {
+      surveyManager.checkAndCloseSurvey(_surveyId);
+    }
   }
 
   function getResponses(uint256 _surveyId) public view returns (Response[] memory) {
