@@ -1,12 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "./ResponseManager.sol";
+
 contract RewardManager {
+    ResponseManager responseManager;
     mapping(address => uint256) public rewards;
 
-    function distributeRewards(uint256 _surveyId, address[] memory _participants) public {
-        for (uint256 i = 0; i < _participants.length; i++) {
-            rewards[_participants[i]] += 1 ether; 
+    constructor(address _responseManagerAddress) {
+        responseManager = ResponseManager(_responseManagerAddress);
+    }
+
+    function distributeRewards(uint256 _surveyId) public {
+        ResponseManager.Response[] memory responses = responseManager.getResponses(_surveyId);
+        for (uint256 i = 0; i < responses.length; i++) {
+            rewards[responses[i].participant] += 1 ether;
         }
     }
 
