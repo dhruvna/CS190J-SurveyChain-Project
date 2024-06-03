@@ -17,7 +17,7 @@ contract UserManager {
 
   function getUsername(address _userAddress) public view returns (string memory) {
     // Check if user exists
-    require (bytes(users[_userAddress].username).length != 0);
+    require (bytes(users[_userAddress].username).length != 0, "User not registered");
     return users[_userAddress].username;
   }
 }

@@ -71,4 +71,23 @@ contract SurveyManager {
     function getSurvey(uint256 _surveyId) public view returns (Survey memory) {
         return surveys[_surveyId];
     }
+
+    function getActiveSurveys() public view returns (Survey[] memory) {
+        uint256 activeSurveyCount = 0;
+        for (uint256 i = 0; i < nextSurveyId; i++) {
+            if (surveys[i].isActive) {
+                activeSurveyCount++;
+            }
+        }
+
+        Survey[] memory activeSurveys = new Survey[](activeSurveyCount);
+        uint256 activeSurveyIndex = 0;
+        for (uint256 i = 0; i < nextSurveyId; i++) {
+            if (surveys[i].isActive) {
+                activeSurveys[activeSurveyIndex] = surveys[i];
+                activeSurveyIndex++;
+            }
+        }
+        return activeSurveys;
+    }
 }
