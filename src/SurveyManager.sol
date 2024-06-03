@@ -45,6 +45,7 @@ contract SurveyManager {
             numResponses: 0,
             isActive: true
         });
+        console.log("Survey number %s created with question %s", nextSurveyId, _question);
         nextSurveyId++;
     }
 

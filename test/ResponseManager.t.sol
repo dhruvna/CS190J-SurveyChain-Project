@@ -15,26 +15,57 @@ contract ResponseManagerTest is Test {
         userManager = new UserManager();
         surveyManager = new SurveyManager(address(userManager));
         responseManager = new ResponseManager(address(surveyManager));
-
-        // Register a user and create a survey for testing response submission
         userManager.register("Alice");
+    }
+
+    function testSubmitResponse() public {
+        // Register a user and create a survey for testing response submission
         uint256[] memory options = new uint256[](3);
         options[0] = 1;
         options[1] = 2;
         options[2] = 3;
-        surveyManager.createSurvey("What is your favorite number?", options, block.timestamp + 1 days, 100);
-    }
 
-    function testSubmitResponse() public {
+        uint256 expiryTimestamp = block.timestamp + 1 days;
+        uint256 maxDataPoints = 100;
+
+        surveyManager.createSurvey("Survey 0", options, expiryTimestamp, maxDataPoints);
+
         responseManager.submitResponse(0, 1);
-
         ResponseManager.Response[] memory responses = responseManager.getResponses(0);
         assertEq(responses.length, 1);
         assertEq(responses[0].selectedOption, 1);
     }
 
+    function testOnlyOneSubmissionPerID() public {
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+
+        uint256 expiryTimestamp = block.timestamp + 1 days;
+        uint256 maxDataPoints = 100;
+
+        surveyManager.createSurvey("Survey 1", options, expiryTimestamp, maxDataPoints);
+
+        responseManager.submitResponse(0, 1);
+
+        // Attempt to submit a second response
+        vm.expectRevert("User has already responded to this survey");
+        responseManager.submitResponse(0, 2);
+    }
+
+
     function testSubmitResponseSurveyExpired() public {
-        vm.warp(block.timestamp + 2 days); // Fast forward time to beyond survey expiry
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+
+        uint256 expiryTimestamp = block.timestamp + 1 days;
+        uint256 maxDataPoints = 100;
+
+        surveyManager.createSurvey("Survey 2", options, expiryTimestamp, maxDataPoints);
+        vm.warp(block.timestamp + 2 days); // Warp time to after survey expiry
         vm.expectRevert("Survey has expired");
         responseManager.submitResponse(0, 1);
     }
@@ -45,18 +76,48 @@ contract ResponseManagerTest is Test {
         options[0] = 1;
         options[1] = 2;
         options[2] = 3;
-        surveyManager.createSurvey("How many pets do you own?", options, block.timestamp + 1 days, 1);
 
-        // Submit the first response
-        responseManager.submitResponse(1, 1);
+        uint256 expiryTimestamp = block.timestamp + 1 days;
+        uint256 maxDataPoints = 1;
 
-        // Try to submit another response, which should fail
+        surveyManager.createSurvey("Survey 3", options, expiryTimestamp, maxDataPoints);
+
+        responseManager.submitResponse(0, 1);
+
         vm.expectRevert("Max data points reached");
-        responseManager.submitResponse(1, 2);
+        responseManager.submitResponse(0, 2);
     }
 
     function testSubmitResponseInvalidOption() public {
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+
+        uint256 expiryTimestamp = block.timestamp + 1 days;
+        uint256 maxDataPoints = 100;
+
+        surveyManager.createSurvey("Survey 4", options, expiryTimestamp, maxDataPoints);
         vm.expectRevert("Invalid option");
         responseManager.submitResponse(0, 5); // Option 5 does not exist
+    }
+
+    function testGetResponses() public {
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+
+        uint256 expiryTimestamp = block.timestamp + 1 days;
+        uint256 maxDataPoints = 100;
+
+        surveyManager.createSurvey("Survey 5", options, expiryTimestamp, maxDataPoints);
+
+        responseManager.submitResponse(0, 1);
+
+        ResponseManager.Response[] memory responses = responseManager.getResponses(0);
+        assertEq(responses.length, 1);
+        assertEq(responses[0].selectedOption, 1);
+        assertEq(responses[0].participant, address(this));
     }
 }

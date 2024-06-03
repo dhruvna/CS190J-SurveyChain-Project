@@ -12,6 +12,7 @@ contract ResponseManager {
 
   SurveyManager surveyManager;
   mapping(uint256 => Response[]) public surveyResponses;
+  mapping(uint256 => mapping(address => bool)) public hasResponded;
 
   constructor(address _surveyManagerAddress) {
     surveyManager = SurveyManager(_surveyManagerAddress);
@@ -23,6 +24,7 @@ contract ResponseManager {
     require(survey.numResponses < survey.maxDataPoints, "Max data points reached");
     require(_selectedOption < survey.options.length, "Invalid option");
     require(survey.isActive, "Survey is not active");
+    require(!hasResponded[_surveyId][msg.sender], "User has already responded to this survey");
 
     surveyResponses[_surveyId].push(Response({
       surveyId: _surveyId,
@@ -30,6 +32,9 @@ contract ResponseManager {
       selectedOption: _selectedOption
     }));
     
+    // Mark user as having responded
+    hasResponded[_surveyId][msg.sender] = true;
+
     // Update survey data point count
     surveyManager.updateSurveyDataPoints(_surveyId);
 

@@ -47,3 +47,17 @@ In this track, you will be building a blockchain survey system that collects use
 - Need to fix logic for multiple last minute submissions
 ### Not Implemented
 - Test case to verify last minute submission success
+
+
+# Ordered Task List
+1. Viewing surveys (basic functionality to check surveys).
+2. Only one submission per ID (adds constraint to survey responses).
+3. Allow anyone to answer without registration (broadens participant base).
+4. Allow users to log in and answer (enhances user management).
+5. Test for problem description in surveys (complete tests for survey creation).
+6. Test for numerical options (ensure options are correctly handled).
+7. Test for more than one option (verify surveys can have multiple options).
+8. Owners can close surveys themselves (add flexibility for survey closure).
+9. Distribute rewards to participants (implement reward logic).
+10. Fix logic for multiple last-minute submissions (handle edge cases).
+11. Test case for last-minute submission success (validate last-minute logic).
