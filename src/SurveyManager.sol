@@ -45,7 +45,7 @@ contract SurveyManager {
             numResponses: 0,
             isActive: true
         });
-        console.log("Survey number", nextSurveyId, "created with description:", _question);
+        console.log("Survey number:", nextSurveyId, "created with description:", _question);
         nextSurveyId++;
     }
 
@@ -76,6 +76,9 @@ contract SurveyManager {
     
     function checkSurvey(uint256 _surveyId) public {
         Survey storage survey = surveys[_surveyId];
+        if(!survey.isActive) {
+            return;
+        }
         if (block.timestamp >= survey.expiryTimestamp || survey.numResponses >= survey.maxDataPoints) {
             closeSurvey(_surveyId);
         }
