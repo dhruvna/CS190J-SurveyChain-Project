@@ -25,7 +25,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 100;
 
-        surveyManager.createSurvey("Survey 0", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for User Not Registered", options, expiryTimestamp, maxDataPoints);
     }
 
     function testCreateSurveyNoOptions() public {
@@ -36,7 +36,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 100;
 
-        surveyManager.createSurvey("Survey 1", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for at least 1 option", options, expiryTimestamp, maxDataPoints);
     }
 
     function testCreateSurveyExpiryTimestampInPast() public {
@@ -50,7 +50,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp - 1;
         uint256 maxDataPoints = 100;
 
-        surveyManager.createSurvey("Survey 2", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for a future expiry timestamp", options, expiryTimestamp, maxDataPoints);
     }
 
     function testCreateSurveyMaxDataPointsZero() public {
@@ -64,7 +64,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 0;
 
-        surveyManager.createSurvey("Survey 3", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for multiple max data points", options, expiryTimestamp, maxDataPoints);
     }
 
     function testCreateSurvey() public {
@@ -76,7 +76,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 2 days;
         uint256 maxDataPoints = 50;
 
-        surveyManager.createSurvey("Survey 4", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for successful survey creation", options, expiryTimestamp, maxDataPoints);
     }
 
     function testSurveyAttributes() public {
@@ -90,10 +90,10 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 3 days;
         uint256 maxDataPoints = 200;
 
-        surveyManager.createSurvey("Survey 5", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for proper survey attributes!", options, expiryTimestamp, maxDataPoints);
 
         SurveyManager.Survey memory survey = surveyManager.getSurvey(0);
-        assertEq(survey.question, "Survey 5");
+        assertEq(survey.question, "Test for proper survey attributes!");
         assertEq(survey.options.length, 4);
         assertEq(survey.options[0], 1);
         assertEq(survey.options[1], 2);
@@ -122,13 +122,13 @@ contract SurveyManagerTest is Test {
         uint256 maxDataPoints1 = 100;
         uint256 maxDataPoints2 = 150;
 
-        surveyManager.createSurvey("Survey 6", options1, expiryTimestamp1, maxDataPoints1);
-        surveyManager.createSurvey("Survey 7", options2, expiryTimestamp2, maxDataPoints2);
+        surveyManager.createSurvey("Test for getting active survey", options1, expiryTimestamp1, maxDataPoints1);
+        surveyManager.createSurvey("Test for getting more than one active survey", options2, expiryTimestamp2, maxDataPoints2);
 
         SurveyManager.Survey[] memory activeSurveys = surveyManager.getActiveSurveys();
         assertEq(activeSurveys.length, 2);
-        assertEq(activeSurveys[0].question, "Survey 6");
-        assertEq(activeSurveys[1].question, "Survey 7");
+        assertEq(activeSurveys[0].question, "Test for getting active survey");
+        assertEq(activeSurveys[1].question, "Test for getting more than one active survey");
     }
 
     function testCloseSurveyManually() public {
@@ -140,7 +140,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 2 days;
         uint256 maxDataPoints = 50;
 
-        surveyManager.createSurvey("Survey 8", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for manual survey closing", options, expiryTimestamp, maxDataPoints);
 
         surveyManager.closeSurveyManually(0);
         SurveyManager.Survey memory survey = surveyManager.getSurvey(0);
@@ -156,7 +156,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 2 days;
         uint256 maxDataPoints = 50;
 
-        surveyManager.createSurvey("Survey 9", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test that only owner can close survey", options, expiryTimestamp, maxDataPoints);
         
         address unregisteredUser = address(0x4321);
         vm.prank(unregisteredUser);

@@ -36,10 +36,11 @@ In this track, you will be building a blockchain survey system that collects use
 ## A survey owner can close the survey or wait for it to close after the expiry block timestamp or when it reaches the maximum accepted data points. When a survey is closed, certain reward in ETH will be sent to the users participating in it.
 ### Completed
 - Surveys close at max entry points, they also close if the expiry block timestamp is in the past. 
+- Owners can close surveys themselves (and only the owner)
 ### In Progress
 - Surveys close if the block timestamp expires, need to check with vm warping
 ### Not Implemented
-- Owners CANNOT yet close surveys themselves
+
 - No rewards are sent
 
 ## On a survey expiry block, the survey will always close after receiving all incoming data points in the same block (last minute submission).
@@ -53,10 +54,6 @@ In this track, you will be building a blockchain survey system that collects use
 
 # Ordered Task List
 1. Allow users to log in and answer (enhances user management).
-2. Test for problem description in surveys (complete tests for survey creation).
-3. Test for numerical options (ensure options are correctly handled).
-4. Test for more than one option (verify surveys can have multiple options).
-5. Owners can close surveys themselves (add flexibility for survey closure).
-6. Distribute rewards to participants (implement reward logic).
-7.  Fix logic for multiple last-minute submissions (handle edge cases).
-8.  Test case for last-minute submission success (validate last-minute logic).
+2. Distribute rewards to participants (implement reward logic).
+3.  Fix logic for multiple last-minute submissions (handle edge cases).
+4.  Test case for last-minute submission success (validate last-minute logic).

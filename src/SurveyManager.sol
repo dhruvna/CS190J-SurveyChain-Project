@@ -45,7 +45,7 @@ contract SurveyManager {
             numResponses: 0,
             isActive: true
         });
-        console.log("Survey number %s created with question %s", nextSurveyId, _question);
+        console.log("Survey number", nextSurveyId, "created with description:", _question);
         nextSurveyId++;
     }
 
@@ -58,7 +58,7 @@ contract SurveyManager {
         Survey storage survey = surveys[_surveyId];
         require(survey.isActive, "Survey is already closed!");
         survey.isActive = false;
-        console.log("Survey closed: %s", survey.question);
+        console.log("Survey:", survey.question, "closed");
     }
 
     function closeSurveyManually(uint256 _surveyId) external {

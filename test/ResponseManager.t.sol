@@ -28,7 +28,7 @@ contract ResponseManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 100;
 
-        surveyManager.createSurvey("Survey 0", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for basic response submission", options, expiryTimestamp, maxDataPoints);
 
         responseManager.submitResponse(0, 1);
         ResponseManager.Response[] memory responses = responseManager.getResponses(0);
@@ -45,7 +45,7 @@ contract ResponseManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 100;
 
-        surveyManager.createSurvey("Survey 1", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for only one submission per user", options, expiryTimestamp, maxDataPoints);
 
         responseManager.submitResponse(0, 1);
 
@@ -64,7 +64,7 @@ contract ResponseManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 100;
 
-        surveyManager.createSurvey("Survey 2", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for expired survey", options, expiryTimestamp, maxDataPoints);
         vm.warp(block.timestamp + 2 days); // Warp time to after survey expiry
         vm.expectRevert("Survey has expired");
         responseManager.submitResponse(0, 1);
@@ -80,7 +80,7 @@ contract ResponseManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 1;
 
-        surveyManager.createSurvey("Survey 3", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for max data points reached", options, expiryTimestamp, maxDataPoints);
 
         responseManager.submitResponse(0, 1);
 
@@ -97,7 +97,7 @@ contract ResponseManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 100;
 
-        surveyManager.createSurvey("Survey 4", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for invalid option selection", options, expiryTimestamp, maxDataPoints);
         vm.expectRevert("Invalid option");
         responseManager.submitResponse(0, 5); // Option 5 does not exist
     }
@@ -111,7 +111,7 @@ contract ResponseManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 100;
 
-        surveyManager.createSurvey("Survey 5", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for getting survey responses", options, expiryTimestamp, maxDataPoints);
 
         responseManager.submitResponse(0, 1);
 
@@ -129,7 +129,7 @@ contract ResponseManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 100;
 
-        surveyManager.createSurvey("Survey 6", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for unregistered participation", options, expiryTimestamp, maxDataPoints);
 
         // Ensure anyone can submit a response without registration
         address unregisteredUser = address(0x1234);
