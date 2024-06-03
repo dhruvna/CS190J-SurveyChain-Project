@@ -25,22 +25,20 @@ contract RewardManagerTest is Test {
         options[0] = 1;
         options[1] = 2;
         options[2] = 3;
-        surveyManager.createSurvey("What is your favorite number?", options, block.timestamp + 1 days, 100);
+        surveyManager.createSurvey("Reward Manager Test Survey", options, block.timestamp + 1 days, 100);
         responseManager.submitResponse(0, 1);
-        vm.deal(address(this), 1 ether);
     }
 
     function testDistributeRewards() public {
+        vm.deal(address(rewardManager), 1 ether);
         rewardManager.distributeRewards(0);
-
+        
         address participant = address(this);
         assertEq(rewardManager.rewards(participant), 1 ether);
     }
 
     function testClaimReward() public {
         address participant = address(this);
-        address[] memory participants = new address[](1);
-        participants[0] = participant;
 
         // Ensure the contract has enough Ether to distribute
         vm.deal(address(rewardManager), 1 ether);
@@ -62,5 +60,13 @@ contract RewardManagerTest is Test {
         console.log("Participant balance after claim:", finalBalance);
 
         assert(finalBalance > initialBalance);
+    }
+
+    receive() external payable {
+        console.log("Received Ether:", msg.value);
+    }
+
+    fallback() external payable {
+        console.log("Fallback called. Received Ether:", msg.value);
     }
 }
