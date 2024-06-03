@@ -130,4 +130,37 @@ contract SurveyManagerTest is Test {
         assertEq(activeSurveys[0].question, "Survey 6");
         assertEq(activeSurveys[1].question, "Survey 7");
     }
+
+    function testCloseSurveyManually() public {
+        userManager.register("Bob");
+        uint256[] memory options = new uint256[](2);
+        options[0] = 15;
+        options[1] = 30;
+
+        uint256 expiryTimestamp = block.timestamp + 2 days;
+        uint256 maxDataPoints = 50;
+
+        surveyManager.createSurvey("Survey 8", options, expiryTimestamp, maxDataPoints);
+
+        surveyManager.closeSurveyManually(0);
+        SurveyManager.Survey memory survey = surveyManager.getSurvey(0);
+        assertEq(survey.isActive, false);
+    }
+
+    function testOnlyOwnerCanCloseSurveyManually() public {
+        userManager.register("Bob");
+        uint256[] memory options = new uint256[](2);
+        options[0] = 25;
+        options[1] = 50;
+
+        uint256 expiryTimestamp = block.timestamp + 2 days;
+        uint256 maxDataPoints = 50;
+
+        surveyManager.createSurvey("Survey 9", options, expiryTimestamp, maxDataPoints);
+        
+        address unregisteredUser = address(0x4321);
+        vm.prank(unregisteredUser);
+        vm.expectRevert("Only the survey creator can close the survey");
+        surveyManager.closeSurveyManually(0);
+    }
 }

@@ -120,4 +120,24 @@ contract ResponseManagerTest is Test {
         assertEq(responses[0].selectedOption, 1);
         assertEq(responses[0].participant, address(this));
     }
+
+    function testSubmitResponseWithoutRegistration() public {
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+        uint256 expiryTimestamp = block.timestamp + 1 days;
+        uint256 maxDataPoints = 100;
+
+        surveyManager.createSurvey("Survey 6", options, expiryTimestamp, maxDataPoints);
+
+        // Ensure anyone can submit a response without registration
+        address unregisteredUser = address(0x1234);
+        vm.prank(unregisteredUser);
+        responseManager.submitResponse(0, 1);
+        ResponseManager.Response[] memory responses = responseManager.getResponses(0);
+        assertEq(responses.length, 1);
+        assertEq(responses[0].selectedOption, 1);
+        assertEq(responses[0].participant, unregisteredUser);
+    }
 }

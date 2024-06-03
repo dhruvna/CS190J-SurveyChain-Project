@@ -61,6 +61,12 @@ contract SurveyManager {
         console.log("Survey closed: %s", survey.question);
     }
 
+    function closeSurveyManually(uint256 _surveyId) external {
+        Survey storage survey = surveys[_surveyId];
+        require(survey.creator == msg.sender, "Only the survey creator can close the survey");
+        closeSurvey(_surveyId);
+    }
+    
     function checkAndCloseSurvey(uint256 _surveyId) external {
         Survey storage survey = surveys[_surveyId];
         if (block.timestamp >= survey.expiryTimestamp || survey.numResponses >= survey.maxDataPoints) {
