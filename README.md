@@ -25,11 +25,12 @@ In this track, you will be building a blockchain survey system that collects use
 ## One can view any active survey and its available options via its ID and participate in it by submitting her choice (only once for each ID).
 ### Completed
 - Users can submit survey answers!
-### In Progress
-- 
-### Not Implemented
-- Viewing surveys
 - Only one submission per ID
+- - Viewing surveys
+### In Progress
+### Not Implemented
+
+
 
 ## A survey owner can close the survey or wait for it to close after the expiry block timestamp or when it reaches the maximum accepted data points. When a survey is closed, certain reward in ETH will be sent to the users participating in it.
 ### Completed
@@ -50,14 +51,12 @@ In this track, you will be building a blockchain survey system that collects use
 
 
 # Ordered Task List
-1. Viewing surveys (basic functionality to check surveys).
-2. Only one submission per ID (adds constraint to survey responses).
-3. Allow anyone to answer without registration (broadens participant base).
-4. Allow users to log in and answer (enhances user management).
-5. Test for problem description in surveys (complete tests for survey creation).
-6. Test for numerical options (ensure options are correctly handled).
-7. Test for more than one option (verify surveys can have multiple options).
-8. Owners can close surveys themselves (add flexibility for survey closure).
-9. Distribute rewards to participants (implement reward logic).
-10. Fix logic for multiple last-minute submissions (handle edge cases).
-11. Test case for last-minute submission success (validate last-minute logic).
+1. Allow anyone to answer without registration (broadens participant base).
+2. Allow users to log in and answer (enhances user management).
+3. Test for problem description in surveys (complete tests for survey creation).
+4. Test for numerical options (ensure options are correctly handled).
+5. Test for more than one option (verify surveys can have multiple options).
+6. Owners can close surveys themselves (add flexibility for survey closure).
+7. Distribute rewards to participants (implement reward logic).
+8.  Fix logic for multiple last-minute submissions (handle edge cases).
+9.  Test case for last-minute submission success (validate last-minute logic).
