@@ -50,6 +50,7 @@ contract SurveyManager {
     }
 
     function updateSurveyDataPoints(uint256 _surveyId) external {
+        checkSurvey(_surveyId);
         Survey storage survey = surveys[_surveyId];
         survey.numResponses++;
     }
@@ -58,7 +59,13 @@ contract SurveyManager {
         Survey storage survey = surveys[_surveyId];
         require(survey.isActive, "Survey is already closed!");
         survey.isActive = false;
-        console.log("Survey:", survey.question, "closed");
+        if (block.timestamp >= survey.expiryTimestamp) {
+            console.log("Survey:", survey.question, "closed due to expiry");
+        }
+        if (survey.numResponses >= survey.maxDataPoints) {
+            console.log("Survey:", survey.question, "closed due to max data points reached");
+        }
+        
     }
 
     function closeSurveyManually(uint256 _surveyId) external {
@@ -67,15 +74,16 @@ contract SurveyManager {
         closeSurvey(_surveyId);
     }
     
-    function checkAndCloseSurvey(uint256 _surveyId) external {
+    function checkSurvey(uint256 _surveyId) public {
         Survey storage survey = surveys[_surveyId];
         if (block.timestamp >= survey.expiryTimestamp || survey.numResponses >= survey.maxDataPoints) {
             closeSurvey(_surveyId);
         }
-        console.log("Survey checked: %s", survey.question);
+        console.log("Survey", survey.question, "checked");
     }
 
-    function getSurvey(uint256 _surveyId) public view returns (Survey memory) {
+    function getSurvey(uint256 _surveyId) public returns (Survey memory) {
+        checkSurvey(_surveyId);
         return surveys[_surveyId];
     }
 

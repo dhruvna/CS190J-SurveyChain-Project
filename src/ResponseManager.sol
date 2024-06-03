@@ -25,6 +25,7 @@ contract ResponseManager {
     require(_selectedOption < survey.options.length, "Invalid option");
     require(survey.isActive, "Survey is not active");
     require(!hasResponded[_surveyId][msg.sender], "User has already responded to this survey");
+    
 
     surveyResponses[_surveyId].push(Response({
       surveyId: _surveyId,
@@ -38,10 +39,8 @@ contract ResponseManager {
     // Update survey data point count
     surveyManager.updateSurveyDataPoints(_surveyId);
 
-    // Check if the survey should be closed
-    if (block.timestamp >= survey.expiryTimestamp || survey.numResponses >= survey.maxDataPoints) {
-      surveyManager.checkAndCloseSurvey(_surveyId);
-    }
+    // Close survey if max data points reached / expiry time reached
+    surveyManager.checkSurvey(_surveyId);
   }
 
   function getResponses(uint256 _surveyId) public view returns (Response[] memory) {

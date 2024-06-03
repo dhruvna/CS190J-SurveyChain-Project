@@ -140,4 +140,37 @@ contract ResponseManagerTest is Test {
         assertEq(responses[0].selectedOption, 1);
         assertEq(responses[0].participant, unregisteredUser);
     }
+
+    function testLastMinuteSubmissions() public {
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+        uint256 expiryTimestamp = block.timestamp + 1 days;
+        uint256 maxDataPoints = 4;
+
+        surveyManager.createSurvey("Test for last minute submissions", options, expiryTimestamp, maxDataPoints);
+
+        // Warp time to 1 second before survey expiry
+        vm.warp(expiryTimestamp - 1);
+        responseManager.submitResponse(0, 0);
+        address unregisteredUser = address(0x1234);
+        vm.prank(unregisteredUser);
+        responseManager.submitResponse(0, 1);
+        address unregisteredUser2 = address(0x5678);
+        vm.prank(unregisteredUser2);
+        responseManager.submitResponse(0, 2);
+
+        // Ensure the survey is still active
+        SurveyManager.Survey memory survey = surveyManager.getSurvey(0);
+        assertEq(survey.numResponses, 3);
+        assert(survey.isActive);
+
+        // Warp time to survey expiry
+        vm.warp(expiryTimestamp);
+
+        // Ensure the survey is closed
+        survey = surveyManager.getSurvey(0);
+        assert(!survey.isActive);
+    }
 }
