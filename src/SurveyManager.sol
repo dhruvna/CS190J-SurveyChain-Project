@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "./UserManager.sol";
+import "./RewardManager.sol";
 
 contract SurveyManager {
     struct Survey {
@@ -17,11 +18,13 @@ contract SurveyManager {
     }
 
     UserManager userManager;
+    RewardManager rewardManager;
     uint256 public nextSurveyId;
     mapping(uint256 => Survey) public surveys;
     
-    constructor(address _userManagerAddress) {
+    constructor(address _userManagerAddress, address payable _rewardManagerAddress) {
         userManager = UserManager(_userManagerAddress);
+        rewardManager = RewardManager(_rewardManagerAddress); // Initialize RewardManager
     }
 
     function createSurvey(
@@ -50,7 +53,6 @@ contract SurveyManager {
     }
 
     function updateSurveyDataPoints(uint256 _surveyId) external {
-        checkSurvey(_surveyId);
         Survey storage survey = surveys[_surveyId];
         survey.numResponses++;
     }
@@ -65,7 +67,10 @@ contract SurveyManager {
         if (survey.numResponses >= survey.maxDataPoints) {
             console.log("Survey:", survey.question, "closed due to max data points reached");
         }
-        
+        // Distribute rewards when the survey is closed (if there are responses)
+        if(survey.numResponses > 0) {
+            rewardManager.distributeRewards(_surveyId);
+        }
     }
 
     function closeSurveyManually(uint256 _surveyId) external {
@@ -76,6 +81,8 @@ contract SurveyManager {
     
     function checkSurvey(uint256 _surveyId) public {
         Survey storage survey = surveys[_surveyId];
+        console.log("Checking survey:", survey.question);
+        console.log("Survey responses", survey.numResponses);
         if(!survey.isActive) {
             return;
         }
@@ -85,8 +92,7 @@ contract SurveyManager {
         console.log("Survey", survey.question, "checked");
     }
 
-    function getSurvey(uint256 _surveyId) public returns (Survey memory) {
-        checkSurvey(_surveyId);
+    function getSurvey(uint256 _surveyId) public view returns (Survey memory) {
         return surveys[_surveyId];
     }
 

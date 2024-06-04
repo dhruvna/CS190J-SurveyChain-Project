@@ -4,14 +4,20 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "../src/UserManager.sol";
 import "../src/SurveyManager.sol";
+import "../src/RewardManager.sol";
+import "../src/ResponseManager.sol";
 
 contract SurveyManagerTest is Test {
     UserManager userManager;
     SurveyManager surveyManager;
+    RewardManager rewardManager;
+    ResponseManager responseManager;
 
     function setUp() public {
         userManager = new UserManager();
-        surveyManager = new SurveyManager(address(userManager));
+        responseManager = new ResponseManager(address(surveyManager));
+        rewardManager = new RewardManager(payable(address(responseManager)));
+        surveyManager = new SurveyManager(address(userManager), payable(address(rewardManager)));
     }
 
     //write test cases that intentionally fail each of the checks within createSurvey of SurveyManager.sol

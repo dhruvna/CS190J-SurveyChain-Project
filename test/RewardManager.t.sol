@@ -15,9 +15,10 @@ contract RewardManagerTest is Test {
 
     function setUp() public {
         userManager = new UserManager();
-        surveyManager = new SurveyManager(address(userManager));
+        rewardManager = new RewardManager(address(0)); // Placeholder to avoid circular dependency
+        surveyManager = new SurveyManager(address(userManager), payable(address(rewardManager)));
         responseManager = new ResponseManager(address(surveyManager));
-        rewardManager = new RewardManager(address(responseManager));
+        rewardManager = new RewardManager(address(responseManager)); // Correct address linkage
 
         // Register a user and create a survey for testing reward distribution
         userManager.register("Alice");

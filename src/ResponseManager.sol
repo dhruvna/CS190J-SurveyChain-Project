@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "forge-std/Test.sol";
 import "./SurveyManager.sol";
 
 contract ResponseManager {
@@ -32,18 +33,17 @@ contract ResponseManager {
       participant: msg.sender,
       selectedOption: _selectedOption
     }));
-    
     // Mark user as having responded
     hasResponded[_surveyId][msg.sender] = true;
-
     // Update survey data point count
     surveyManager.updateSurveyDataPoints(_surveyId);
-
     // Close survey if max data points reached / expiry time reached
     surveyManager.checkSurvey(_surveyId);
   }
 
   function getResponses(uint256 _surveyId) public view returns (Response[] memory) {
+    console.log("Fetching responses for survey ID:", _surveyId);
+    console.log("Number of responses:", surveyResponses[_surveyId].length);
     return surveyResponses[_surveyId];
   }
 }
