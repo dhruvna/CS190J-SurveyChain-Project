@@ -6,6 +6,7 @@ import "../src/UserManager.sol";
 import "../src/SurveyManager.sol";
 import "../src/ResponseManager.sol";
 import "../src/RewardManager.sol";
+import {ReentrantContract} from "./rewardAttacker.sol";
 
 contract RewardManagerTest is Test {
     UserManager userManager;
@@ -67,9 +68,8 @@ contract RewardManagerTest is Test {
         assert(finalBalance == initialBalance + 6 ether);
     }
 
-    //overflow attack test
+    //overflow attack test, expect revert 
     function testOverflow() public {
-        // Setup: Bring the reward to edge case near overflow
         address user = address(0xDEF);
         rewardManager.distributeRewards(0, user, type(uint256).max - 1);
 
@@ -77,6 +77,26 @@ contract RewardManagerTest is Test {
         vm.expectRevert();
         rewardManager.distributeRewards(0, user, 2);
     }
+    // test reetnrancy with an attacker contract 
+    function testReentrancyAttack() public {
+        // ensure the contract has enough Ether to distribute
+        vm.deal(address(rewardManager), 10 ether);
+        assert(address(rewardManager).balance == 10 ether);
+
+        // Setup: Assume a user has rewards to claim
+        address attacker = address(0xABC);
+        rewardManager.distributeRewards(0, attacker, 1 ether);
+        // Test: Call claimReward in a reentrant manner
+        vm.prank(attacker);
+        rewardManager.claimReward();
+        ReentrantContract reentrant = new ReentrantContract(address(rewardManager));
+        vm.expectRevert();
+        reentrant.attack();
+
+        // Verify: Check the final state to ensure no extra ether was claimed
+        assertEq(address(rewardManager).balance, 9 ether);
+    }
+
 
     //Full survey lifecycle test[createSurvey -> submitResponse -> distributeRewards -> claimReward] [TODO]
     
