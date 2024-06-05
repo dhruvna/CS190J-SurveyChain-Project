@@ -15,9 +15,10 @@ contract RewardManagerTest is Test {
 
     function setUp() public {
         userManager = new UserManager();
+        rewardManager = new RewardManager(address(0)); // Placeholder to avoid circular dependency
         surveyManager = new SurveyManager(address(userManager));
-        responseManager = new ResponseManager(address(surveyManager));
-        rewardManager = new RewardManager(address(responseManager));
+        responseManager = new ResponseManager(address(surveyManager), payable(address(rewardManager)));
+        rewardManager = new RewardManager(address(responseManager)); // Correct address linkage
 
         // Register a user and create a survey for testing reward distribution
         userManager.register("Alice");
@@ -31,9 +32,10 @@ contract RewardManagerTest is Test {
 
     function testDistributeRewards() public {
         vm.deal(address(rewardManager), 1 ether);
-        rewardManager.distributeRewards(0);
         
         address participant = address(this);
+        rewardManager.distributeRewards(0, participant);
+
         assertEq(rewardManager.rewards(participant), 1 ether);
     }
 
@@ -44,7 +46,7 @@ contract RewardManagerTest is Test {
         vm.deal(address(rewardManager), 1 ether);
         assert(address(rewardManager).balance == 1 ether);
 
-        rewardManager.distributeRewards(0);
+        rewardManager.distributeRewards(0, participant);
 
         uint256 initialBalance = participant.balance;
 

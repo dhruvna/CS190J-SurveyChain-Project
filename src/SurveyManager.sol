@@ -17,11 +17,13 @@ contract SurveyManager {
     }
 
     UserManager userManager;
+   // RewardManager rewardManager;
     uint256 public nextSurveyId;
     mapping(uint256 => Survey) public surveys;
     
     constructor(address _userManagerAddress) {
         userManager = UserManager(_userManagerAddress);
+      //  rewardManager = RewardManager(_rewardManagerAddress); // Initialize RewardManager
     }
 
     function createSurvey(
@@ -50,9 +52,9 @@ contract SurveyManager {
     }
 
     function updateSurveyDataPoints(uint256 _surveyId) external {
-        checkSurvey(_surveyId);
         Survey storage survey = surveys[_surveyId];
         survey.numResponses++;
+        checkSurvey(_surveyId);
     }
 
     function closeSurvey(uint256 _surveyId) internal {
@@ -65,7 +67,11 @@ contract SurveyManager {
         if (survey.numResponses >= survey.maxDataPoints) {
             console.log("Survey:", survey.question, "closed due to max data points reached");
         }
+        // Distribute rewards when the survey is closed (if there are responses)
         
+        //if(survey.numResponses > 0) {
+          //  rewardManager.distributeRewards(_surveyId);
+        //}
     }
 
     function closeSurveyManually(uint256 _surveyId) external {
@@ -76,17 +82,20 @@ contract SurveyManager {
     
     function checkSurvey(uint256 _surveyId) public {
         Survey storage survey = surveys[_surveyId];
+        console.log("Checking Survey:", survey.question);
+        console.log("Num Responses:", survey.numResponses);
         if(!survey.isActive) {
+            console.log("Survey not Active");
             return;
         }
         if (block.timestamp >= survey.expiryTimestamp || survey.numResponses >= survey.maxDataPoints) {
             closeSurvey(_surveyId);
         }
-        console.log("Survey", survey.question, "checked");
     }
 
+    //returns survey data, also ensure survey is checked to see if it needs to be closed before returning
     function getSurvey(uint256 _surveyId) public returns (Survey memory) {
-        checkSurvey(_surveyId);
+        checkSurvey(_surveyId); // Call checkSurvey before returning the survey data
         return surveys[_surveyId];
     }
 
