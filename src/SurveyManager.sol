@@ -54,6 +54,7 @@ contract SurveyManager {
     function updateSurveyDataPoints(uint256 _surveyId) external {
         Survey storage survey = surveys[_surveyId];
         survey.numResponses++;
+        checkSurvey(_surveyId);
     }
 
     function closeSurvey(uint256 _surveyId) internal {
@@ -89,7 +90,7 @@ contract SurveyManager {
         if (block.timestamp >= survey.expiryTimestamp || survey.numResponses >= survey.maxDataPoints) {
             closeSurvey(_surveyId);
         }
-        console.log("Survey", survey.question, "checked");
+        console.log("Survey", survey.question, "check complete");
     }
 
     function getSurvey(uint256 _surveyId) public view returns (Survey memory) {
