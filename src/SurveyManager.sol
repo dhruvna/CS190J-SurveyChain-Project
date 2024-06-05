@@ -90,7 +90,7 @@ contract SurveyManager {
             console.log("Survey not Active");
             return;
         }
-        if (block.timestamp >= survey.expiryTimestamp || survey.numResponses >= survey.maxDataPoints) {
+        if (block.timestamp > survey.expiryTimestamp || survey.numResponses >= survey.maxDataPoints) {
             closeSurvey(_surveyId);
         }
     }
