@@ -12,15 +12,17 @@ contract RewardManager {
         responseManager = ResponseManager(_responseManagerAddress);
     }
 
-    function distributeRewards(uint256 _surveyId) public {
+    function distributeRewards(uint256 _surveyId, address _userAddress) public {
         console.log("Distributing rewards for survey ID:", _surveyId);
-        ResponseManager.Response[] memory responses = responseManager.getResponses(_surveyId);
-        console.log("Number of responses:", responses.length);
-        require(responses.length > 0, "No responses to distribute rewards");
-        for (uint256 i = 0; i < responses.length; i++) {
-            rewards[responses[i].participant] += 1 ether;
-            console.log("Reward distributed to:", responses[i].participant, "Amount:", 1 ether);
-        }
+      //  ResponseManager.Response[] memory responses = responseManager.getResponses(_surveyId);
+        //console.log("Number of responses:", responses.length);
+        //require(responses.length > 0, "No responses to distribute rewards");
+        rewards[_userAddress] += 1 ether;
+          console.log("Reward distributed to:", rewards[_userAddress], "Amount:", 1 ether);
+       // for (uint256 i = 0; i < responses.length; i++) {
+         //   rewards[responses[i].participant] += 1 ether;
+           // console.log("Reward distributed to:", responses[i].participant, "Amount:", 1 ether);
+       // }
         console.log("End of reward distribution");
     }
 

@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "./SurveyManager.sol";
+import "./RewardManager.sol";
 
 contract ResponseManager {
   struct Response {
@@ -12,12 +13,16 @@ contract ResponseManager {
   }
 
   SurveyManager surveyManager;
+  RewardManager rewardManager;
   mapping(uint256 => Response[]) public surveyResponses;
   mapping(uint256 => mapping(address => bool)) public hasResponded;
 
-  constructor(address _surveyManagerAddress) {
+  constructor(address _surveyManagerAddress, address payable _rewardManagerAddress) {
     surveyManager = SurveyManager(_surveyManagerAddress);
+            rewardManager = RewardManager(_rewardManagerAddress); // Initialize RewardManager
+
   }
+
   
   function submitResponse(uint256 _surveyId, uint256 _selectedOption) public {
     SurveyManager.Survey memory survey = surveyManager.getSurvey(_surveyId);
@@ -39,6 +44,8 @@ contract ResponseManager {
     surveyManager.updateSurveyDataPoints(_surveyId);
     // Close survey if max data points reached / expiry time reached
     surveyManager.checkSurvey(_surveyId);
+    console.log("testing distro" );
+    rewardManager.distributeRewards(_surveyId, msg.sender);
   }
 
   function getResponses(uint256 _surveyId) public view returns (Response[] memory) {

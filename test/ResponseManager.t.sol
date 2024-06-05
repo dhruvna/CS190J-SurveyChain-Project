@@ -14,10 +14,10 @@ contract ResponseManagerTest is Test {
     
     function setUp() public {
         userManager = new UserManager();
-        responseManager = new ResponseManager(address(0)); // Placeholder to avoid circular dependency
+        responseManager = new ResponseManager(address(0), payable(address(0))); // Placeholder to avoid circular dependency
         rewardManager = new RewardManager(address(responseManager)); // Correct address linkage
-        surveyManager = new SurveyManager(address(userManager), payable(address(rewardManager)));
-        responseManager = new ResponseManager(address(surveyManager)); // Reassign correct address after instantiation
+        surveyManager = new SurveyManager(address(userManager));
+        responseManager = new ResponseManager(address(surveyManager), payable(address(rewardManager))); // Reassign correct address after instantiation
         userManager.register("Alice");
     }
 

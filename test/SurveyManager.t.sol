@@ -15,9 +15,11 @@ contract SurveyManagerTest is Test {
 
     function setUp() public {
         userManager = new UserManager();
-        responseManager = new ResponseManager(address(surveyManager));
-        rewardManager = new RewardManager(payable(address(responseManager)));
-        surveyManager = new SurveyManager(address(userManager), payable(address(rewardManager)));
+        responseManager = new ResponseManager(address(0), payable(address(0))); // Placeholder to avoid circular dependency
+        rewardManager = new RewardManager(address(responseManager)); // Correct address linkage
+        surveyManager = new SurveyManager(address(userManager));
+        responseManager = new ResponseManager(address(surveyManager), payable(address(rewardManager)));
+
     }
 
     //write test cases that intentionally fail each of the checks within createSurvey of SurveyManager.sol
