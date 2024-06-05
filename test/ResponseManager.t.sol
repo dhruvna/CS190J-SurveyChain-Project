@@ -207,4 +207,15 @@ contract ResponseManagerTest is Test {
         finalReputation = userManager.getReputation(address(this));
         assertEq(finalReputation, initialReputation + 2);
     }
+
+    // Check that we have protection in place for reputation overflow, should not revert
+    function testReputationOverflow() public {
+        address user = address(0xDEF);
+        vm.prank(user);
+        userManager.register("Bob");
+        vm.prank(user);
+        userManager.increaseReputation(user, type(uint256).max - 1);
+        vm.prank(user);
+        userManager.increaseReputation(user, 2);
+    }
 }

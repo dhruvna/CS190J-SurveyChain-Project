@@ -43,10 +43,10 @@ This project is a blockchain-based survey system that allows users to create, pa
   - **Notes:** Only callable for registered users. Throws an error if the user is not registered.
 
 - **Increase Reputation**
-  - **Function:** `increaseReputation(address _userAddress) public`
-  - **Description:** Increases the reputation of a registered user by 1.
+  - **Function:** `increaseReputation(address _userAddress, uint256 _reputationEarned)`
+  - **Description:** Increases the reputation of a registered user by the amount specified.
   - **Returns:** None.
-  - **Notes:** Only callable for registered users. Logs a message without updating any value if the user is not registered.
+  - **Notes:** Only callable for registered users. Logs a message without updating any value if the user is not registered. If a user's reputation would increase above the maximum, clamp to the maximum value. 
 
 ### SurveyManager
 
@@ -310,6 +310,13 @@ This project is a blockchain-based survey system that allows users to create, pa
   - **Returns:** None.
   - **Assertions:** 
     - Verifies that the user's reputation is correctly incremented after submitting responses.
+
+#### Security Tests
+- **Test Reputation Overflow Attack**
+  - **Function:** `testReputationOverflow() public`
+  - **Description:** Ensures that an overflow attack is prevented when increasing user reputation.
+  - **Returns:** None.
+  - **Assertions:** The increaseReputation() function within UserManager should handle overflow gracefully.
 
 ### RewardManagerTest
 

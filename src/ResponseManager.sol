@@ -44,7 +44,7 @@ contract ResponseManager {
     // Update survey data point count
     surveyManager.updateSurveyDataPoints(_surveyId);
     // Increase user reputation
-    userManager.increaseReputation(msg.sender);
+    userManager.increaseReputation(msg.sender, 1);
     // Distribute Rewards after each response
     rewardManager.distributeRewards(_surveyId, msg.sender, survey.reward);
     // Close survey if max data points reached / expiry time reached

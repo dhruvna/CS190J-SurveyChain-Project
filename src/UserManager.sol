@@ -36,11 +36,23 @@ contract UserManager {
     return users[_userAddress].reputation;
   }
 
-  function increaseReputation(address _userAddress) public {
+  function increaseReputation(address _userAddress, uint256 _surveyValue) public {
     if(isRegistered(_userAddress)) {
-      users[_userAddress].reputation += 1;
+      uint256 currentReputation = getReputation(_userAddress);
+      // Check for overflow
+      uint256 newReputation = 0;
+      unchecked {
+        newReputation = currentReputation + _surveyValue;
+      }
+      if (newReputation <= currentReputation) {
+        console.log("Reputation overflow detected, clamping to max value.");
+        users[_userAddress].reputation = type(uint256).max - 1;
+      } else {
+        console.log("Reputation increased successfully, new reputation: ", newReputation);
+        users[_userAddress].reputation = newReputation;
+      }
     } else {
-      console.log("Must be logged in to increase reputation");
+        console.log("Must be logged in to increase reputation");
     }
   }
 }
