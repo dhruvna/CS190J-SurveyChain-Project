@@ -174,7 +174,6 @@ contract ResponseManagerTest is Test {
         vm.warp(expiryTimestamp);
 
         // Ensure the survey is closed
-        surveyManager.checkSurvey(0);
         survey = surveyManager.getSurvey(0);
         assert(!survey.isActive);
     }

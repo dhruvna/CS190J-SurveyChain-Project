@@ -42,10 +42,10 @@ contract ResponseManager {
     hasResponded[_surveyId][msg.sender] = true;
     // Update survey data point count
     surveyManager.updateSurveyDataPoints(_surveyId);
+     //Distribute Rewards after each response
+    rewardManager.distributeRewards(_surveyId, msg.sender);   
     // Close survey if max data points reached / expiry time reached
     surveyManager.checkSurvey(_surveyId);
-    console.log("testing distro" );
-    rewardManager.distributeRewards(_surveyId, msg.sender);
   }
 
   function getResponses(uint256 _surveyId) public view returns (Response[] memory) {
