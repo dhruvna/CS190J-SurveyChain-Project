@@ -67,6 +67,17 @@ contract RewardManagerTest is Test {
         assert(finalBalance == initialBalance + 6 ether);
     }
 
+    //overflow attack test
+    function testOverflow() public {
+        // Setup: Bring the reward to edge case near overflow
+        address user = address(0xDEF);
+        rewardManager.distributeRewards(0, user, type(uint256).max - 1);
+
+        // Test: Adding any amount should overflow
+        vm.expectRevert();
+        rewardManager.distributeRewards(0, user, 2);
+    }
+
     //Full survey lifecycle test[createSurvey -> submitResponse -> distributeRewards -> claimReward] [TODO]
     
     receive() external payable {
