@@ -17,7 +17,7 @@ contract RewardManagerTest is Test {
         userManager = new UserManager();
         rewardManager = new RewardManager(address(0)); // Placeholder to avoid circular dependency
         surveyManager = new SurveyManager(address(userManager));
-        responseManager = new ResponseManager(address(surveyManager), payable(address(rewardManager)));
+        responseManager = new ResponseManager(address(userManager), address(surveyManager), payable(address(rewardManager)));
         rewardManager = new RewardManager(address(responseManager)); // Correct address linkage
 
         // Register a user and create a survey for testing reward distribution

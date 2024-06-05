@@ -12,17 +12,19 @@ contract ResponseManager {
     uint256 selectedOption;
   }
 
+  UserManager userManager;
   SurveyManager surveyManager;
   RewardManager rewardManager;
   mapping(uint256 => Response[]) public surveyResponses;
   mapping(uint256 => mapping(address => bool)) public hasResponded;
 
-  constructor(address _surveyManagerAddress, address payable _rewardManagerAddress) {
+  constructor(address _userManagerAddress, address _surveyManagerAddress, address payable _rewardManagerAddress) {
+    userManager = UserManager(_userManagerAddress);
     surveyManager = SurveyManager(_surveyManagerAddress);
-      rewardManager = RewardManager(_rewardManagerAddress); // Initialize RewardManager
+    rewardManager = RewardManager(_rewardManagerAddress); // Initialize RewardManager
   }
 
-  
+
   function submitResponse(uint256 _surveyId, uint256 _selectedOption) public {
     SurveyManager.Survey memory survey = surveyManager.getSurvey(_surveyId);
     require(block.timestamp <= survey.expiryTimestamp, "Survey has expired");
@@ -36,12 +38,14 @@ contract ResponseManager {
       participant: msg.sender,
       selectedOption: _selectedOption
     }));
-    
+
     // Mark user as having responded
     hasResponded[_surveyId][msg.sender] = true;
     // Update survey data point count
     surveyManager.updateSurveyDataPoints(_surveyId);
-     //Distribute Rewards after each response
+    // Increase user reputation
+    userManager.increaseReputation(msg.sender);
+    // Distribute Rewards after each response
     rewardManager.distributeRewards(_surveyId, msg.sender, survey.reward);
     // Close survey if max data points reached / expiry time reached
     surveyManager.checkSurvey(_surveyId);

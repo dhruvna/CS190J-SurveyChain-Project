@@ -14,10 +14,10 @@ contract ResponseManagerTest is Test {
 
     function setUp() public {
         userManager = new UserManager();
-        responseManager = new ResponseManager(address(0), payable(address(0))); // Placeholder to avoid circular dependency
+        responseManager = new ResponseManager(address(userManager), address(0), payable(address(0))); // Placeholder to avoid circular dependency
         rewardManager = new RewardManager(address(responseManager)); // Correct address linkage
         surveyManager = new SurveyManager(address(userManager));
-        responseManager = new ResponseManager(address(surveyManager), payable(address(rewardManager))); // Reassign correct address after instantiation
+        responseManager = new ResponseManager(address(userManager), address(surveyManager), payable(address(rewardManager))); // Reassign correct address after instantiation
         userManager.register("Alice");
     }
 
@@ -183,5 +183,28 @@ contract ResponseManagerTest is Test {
         // Ensure the survey is closed
         survey = surveyManager.getSurvey(0);
         assert(!survey.isActive);
+    }
+
+    // Ensure that user reputation is increased after submitting a response, should not revert
+    function testIncreaseReputation() public {
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+
+        uint256 expiryTimestamp = block.timestamp + 1 days;
+        uint256 maxDataPoints = 100;
+
+        surveyManager.createSurvey("Test for reputation increase", options, expiryTimestamp, maxDataPoints, 1 ether);
+
+        uint256 initialReputation = userManager.getReputation(address(this));
+        responseManager.submitResponse(0, 1);
+        uint256 finalReputation = userManager.getReputation(address(this));
+        assertEq(finalReputation, initialReputation + 1);
+
+        surveyManager.createSurvey("Test for reputation increase 2", options, expiryTimestamp, maxDataPoints, 1 ether);
+        responseManager.submitResponse(1, 1);
+        finalReputation = userManager.getReputation(address(this));
+        assertEq(finalReputation, initialReputation + 2);
     }
 }
