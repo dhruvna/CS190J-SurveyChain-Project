@@ -26,27 +26,28 @@ contract RewardManagerTest is Test {
         options[0] = 1;
         options[1] = 2;
         options[2] = 3;
-        surveyManager.createSurvey("Reward Manager Test Survey", options, block.timestamp + 1 days, 100);
+        surveyManager.createSurvey("Reward Manager Test Survey", options, block.timestamp + 1 days, 100, 1 ether);
         responseManager.submitResponse(0, 1);
     }
 
     function testDistributeRewards() public {
-        vm.deal(address(rewardManager), 1 ether);
+        // Ensure the contract has enough Ether to distribute
+        vm.deal(address(rewardManager), 100 ether);
         
         address participant = address(this);
-        rewardManager.distributeRewards(0, participant);
+        rewardManager.distributeRewards(0, participant, 5 ether);
 
-        assertEq(rewardManager.rewards(participant), 1 ether);
+        assertEq(rewardManager.rewards(participant), 5 ether);
     }
 
     function testClaimReward() public {
         address participant = address(this);
 
         // Ensure the contract has enough Ether to distribute
-        vm.deal(address(rewardManager), 1 ether);
-        assert(address(rewardManager).balance == 1 ether);
+        vm.deal(address(rewardManager), 100 ether);
+        assert(address(rewardManager).balance == 100 ether);
 
-        rewardManager.distributeRewards(0, participant);
+        rewardManager.distributeRewards(0, participant, 6 ether);
 
         uint256 initialBalance = participant.balance;
 
@@ -61,7 +62,7 @@ contract RewardManagerTest is Test {
 
         console.log("Participant balance after claim:", finalBalance);
 
-        assert(finalBalance > initialBalance);
+        assert(finalBalance == initialBalance + 6 ether);
     }
 
     receive() external payable {

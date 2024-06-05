@@ -11,7 +11,7 @@ contract UserManager {
 
   function register(string memory _username) public {
     // Check if user already exists
-    require(bytes(users[msg.sender].username).length == 0);
+    require(bytes(users[msg.sender].username).length == 0, "Blockchain address already registered to an acccount");
     users[msg.sender] = User(_username, msg.sender);
   }
 

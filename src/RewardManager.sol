@@ -12,10 +12,10 @@ contract RewardManager {
         responseManager = ResponseManager(_responseManagerAddress);
     }
 
-    function distributeRewards(uint256 _surveyId, address _userAddress) public {
+    function distributeRewards(uint256 _surveyId, address _userAddress, uint256 amount) public {
         console.log("Distributing rewards for survey ID:", _surveyId);
-        rewards[_userAddress] += 1 ether;
-        console.log("Reward distributed to User Address:", _userAddress, "Amount:", "1 ether");
+        rewards[_userAddress] += amount;
+        console.log("Reward distributed to User Address:", _userAddress, "Amount:", amount);
     }
 
     function claimReward() public {
@@ -29,7 +29,6 @@ contract RewardManager {
         require(address(this).balance >= reward, "Insufficient contract balance");
 
         (bool success, ) = payable(msg.sender).call{value: reward}("");
-        // bool success = payable(msg.sender).send(reward);
         require(success, "Transfer failed");
 
         console.log("Transfer successful:", success);

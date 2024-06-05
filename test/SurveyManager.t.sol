@@ -33,7 +33,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 100;
 
-        surveyManager.createSurvey("Test for User Not Registered", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for User Not Registered", options, expiryTimestamp, maxDataPoints, 1 ether);
     }
 
     function testCreateSurveyNoOptions() public {
@@ -44,7 +44,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 100;
 
-        surveyManager.createSurvey("Test for at least 1 option", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for at least 1 option", options, expiryTimestamp, maxDataPoints, 1 ether);
     }
 
     function testCreateSurveyExpiryTimestampInPast() public {
@@ -58,7 +58,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp - 1;
         uint256 maxDataPoints = 100;
 
-        surveyManager.createSurvey("Test for a future expiry timestamp", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for a future expiry timestamp", options, expiryTimestamp, maxDataPoints, 1 ether);
     }
 
     function testCreateSurveyMaxDataPointsZero() public {
@@ -72,7 +72,18 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 0;
 
-        surveyManager.createSurvey("Test for multiple max data points", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for multiple max data points", options, expiryTimestamp, maxDataPoints, 1 ether);
+    }
+
+    function testCreateSurveyNoReward() public {
+        userManager.register("Alice");
+        vm.expectRevert("Reward must be greater than zero");
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+
+        surveyManager.createSurvey("Test for reward greater than zero", options, block.timestamp + 1 days, 100, 0 ether);
     }
 
     function testCreateSurvey() public {
@@ -84,7 +95,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 2 days;
         uint256 maxDataPoints = 50;
 
-        surveyManager.createSurvey("Test for successful survey creation", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for successful survey creation", options, expiryTimestamp, maxDataPoints, 1 ether);
     }
 
     function testSurveyAttributes() public {
@@ -98,7 +109,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 3 days;
         uint256 maxDataPoints = 200;
 
-        surveyManager.createSurvey("Test for proper survey attributes!", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for proper survey attributes!", options, expiryTimestamp, maxDataPoints, 4 ether);
 
         SurveyManager.Survey memory survey = surveyManager.getSurvey(0);
         assertEq(survey.question, "Test for proper survey attributes!");
@@ -109,6 +120,7 @@ contract SurveyManagerTest is Test {
         assertEq(survey.options[3], 4);
         assertEq(survey.expiryTimestamp, expiryTimestamp);
         assertEq(survey.maxDataPoints, maxDataPoints);
+        assertEq(survey.reward, 4 ether);
     }
 
     function testGetActiveSurveys() public {
@@ -130,8 +142,8 @@ contract SurveyManagerTest is Test {
         uint256 maxDataPoints1 = 100;
         uint256 maxDataPoints2 = 150;
 
-        surveyManager.createSurvey("Test for getting active survey", options1, expiryTimestamp1, maxDataPoints1);
-        surveyManager.createSurvey("Test for getting more than one active survey", options2, expiryTimestamp2, maxDataPoints2);
+        surveyManager.createSurvey("Test for getting active survey", options1, expiryTimestamp1, maxDataPoints1, 1 ether);
+        surveyManager.createSurvey("Test for getting more than one active survey", options2, expiryTimestamp2, maxDataPoints2, 1 ether);
 
         SurveyManager.Survey[] memory activeSurveys = surveyManager.getActiveSurveys();
         assertEq(activeSurveys.length, 2);
@@ -148,7 +160,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 2 days;
         uint256 maxDataPoints = 50;
 
-        surveyManager.createSurvey("Test for manual survey closing", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test for manual survey closing", options, expiryTimestamp, maxDataPoints, 1 ether);
 
         surveyManager.closeSurveyManually(0);
         SurveyManager.Survey memory survey = surveyManager.getSurvey(0);
@@ -164,7 +176,7 @@ contract SurveyManagerTest is Test {
         uint256 expiryTimestamp = block.timestamp + 2 days;
         uint256 maxDataPoints = 50;
 
-        surveyManager.createSurvey("Test that only owner can close survey", options, expiryTimestamp, maxDataPoints);
+        surveyManager.createSurvey("Test that only owner can close survey", options, expiryTimestamp, maxDataPoints, 1 ether);
         
         address unregisteredUser = address(0x4321);
         vm.prank(unregisteredUser);

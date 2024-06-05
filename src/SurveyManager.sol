@@ -14,28 +14,29 @@ contract SurveyManager {
         uint256 maxDataPoints;
         uint256 numResponses;
         bool isActive;
+        uint256 reward;
     }
 
     UserManager userManager;
-   // RewardManager rewardManager;
     uint256 public nextSurveyId;
     mapping(uint256 => Survey) public surveys;
     
     constructor(address _userManagerAddress) {
         userManager = UserManager(_userManagerAddress);
-      //  rewardManager = RewardManager(_rewardManagerAddress); // Initialize RewardManager
     }
 
     function createSurvey(
         string memory _question,
         uint256[] memory _options,
         uint256 _expiryTimestamp,
-        uint256 _maxDataPoints
+        uint256 _maxDataPoints,
+        uint256 _reward
     ) public {
         require(bytes(userManager.getUsername(msg.sender)).length != 0, "User not registered");
         require(_options.length > 0, "Survey must have at least one option");
         require(_expiryTimestamp > block.timestamp, "Expiry timestamp must be in the future");
         require(_maxDataPoints > 0, "Max data points must be greater than zero");
+        require(_reward > 0, "Reward must be greater than zero");
 
         surveys[nextSurveyId] = Survey({
             id: nextSurveyId,
@@ -45,7 +46,8 @@ contract SurveyManager {
             expiryTimestamp: _expiryTimestamp,
             maxDataPoints: _maxDataPoints,
             numResponses: 0,
-            isActive: true
+            isActive: true,
+            reward: _reward
         });
         console.log("Survey number:", nextSurveyId, "created with description:", _question);
         nextSurveyId++;
@@ -67,11 +69,6 @@ contract SurveyManager {
         if (survey.numResponses >= survey.maxDataPoints) {
             console.log("Survey:", survey.question, "closed due to max data points reached");
         }
-        // Distribute rewards when the survey is closed (if there are responses)
-        
-        //if(survey.numResponses > 0) {
-          //  rewardManager.distributeRewards(_surveyId);
-        //}
     }
 
     function closeSurveyManually(uint256 _surveyId) external {
