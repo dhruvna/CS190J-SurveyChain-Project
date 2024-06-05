@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "forge-std/Test.sol";
 import "./ResponseManager.sol";
 
 contract RewardManager {
@@ -11,12 +12,10 @@ contract RewardManager {
         responseManager = ResponseManager(_responseManagerAddress);
     }
 
-    function distributeRewards(uint256 _surveyId) public {
-        ResponseManager.Response[] memory responses = responseManager.getResponses(_surveyId);
-        for (uint256 i = 0; i < responses.length; i++) {
-            rewards[responses[i].participant] += 1 ether;
-            console.log("Reward distributed to:", responses[i].participant, "Amount:", 1 ether);
-        }
+    function distributeRewards(uint256 _surveyId, address _userAddress) public {
+        console.log("Distributing rewards for survey ID:", _surveyId);
+        rewards[_userAddress] += 1 ether;
+        console.log("Reward distributed to User Address:", _userAddress, "Amount:", "1 ether");
     }
 
     function claimReward() public {

@@ -4,14 +4,22 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "../src/UserManager.sol";
 import "../src/SurveyManager.sol";
+import "../src/RewardManager.sol";
+import "../src/ResponseManager.sol";
 
 contract SurveyManagerTest is Test {
     UserManager userManager;
     SurveyManager surveyManager;
+    RewardManager rewardManager;
+    ResponseManager responseManager;
 
     function setUp() public {
         userManager = new UserManager();
+        responseManager = new ResponseManager(address(0), payable(address(0))); // Placeholder to avoid circular dependency
+        rewardManager = new RewardManager(address(responseManager)); // Correct address linkage
         surveyManager = new SurveyManager(address(userManager));
+        responseManager = new ResponseManager(address(surveyManager), payable(address(rewardManager)));
+
     }
 
     //write test cases that intentionally fail each of the checks within createSurvey of SurveyManager.sol

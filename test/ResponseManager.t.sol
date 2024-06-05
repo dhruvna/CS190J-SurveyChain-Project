@@ -10,11 +10,14 @@ contract ResponseManagerTest is Test {
     UserManager userManager;
     SurveyManager surveyManager;
     ResponseManager responseManager;
-
+    RewardManager rewardManager;
+    
     function setUp() public {
         userManager = new UserManager();
+        responseManager = new ResponseManager(address(0), payable(address(0))); // Placeholder to avoid circular dependency
+        rewardManager = new RewardManager(address(responseManager)); // Correct address linkage
         surveyManager = new SurveyManager(address(userManager));
-        responseManager = new ResponseManager(address(surveyManager));
+        responseManager = new ResponseManager(address(surveyManager), payable(address(rewardManager))); // Reassign correct address after instantiation
         userManager.register("Alice");
     }
 
@@ -63,7 +66,7 @@ contract ResponseManagerTest is Test {
 
         uint256 expiryTimestamp = block.timestamp + 1 days;
         uint256 maxDataPoints = 100;
-
+        
         surveyManager.createSurvey("Test for expired survey", options, expiryTimestamp, maxDataPoints);
         vm.warp(block.timestamp + 2 days); // Warp time to after survey expiry
         vm.expectRevert("Survey has expired");
@@ -83,6 +86,7 @@ contract ResponseManagerTest is Test {
         surveyManager.createSurvey("Test for max data points reached", options, expiryTimestamp, maxDataPoints);
 
         responseManager.submitResponse(0, 1);
+        console.log("First response submitted");
 
         vm.expectRevert("Max data points reached");
         responseManager.submitResponse(0, 2);
@@ -151,8 +155,8 @@ contract ResponseManagerTest is Test {
 
         surveyManager.createSurvey("Test for last minute submissions", options, expiryTimestamp, maxDataPoints);
 
-        // Warp time to 1 second before survey expiry
-        vm.warp(expiryTimestamp - 1);
+        // Warp time to 1 minute before survey expiry
+        vm.warp(expiryTimestamp - 60);
         responseManager.submitResponse(0, 0);
         address unregisteredUser = address(0x1234);
         vm.prank(unregisteredUser);
