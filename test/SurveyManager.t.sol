@@ -181,10 +181,7 @@ contract SurveyManagerTest is Test {
 
     // Survey Tests Section 3
     // Survey Closure
-
-    // Surveys should close automatically after expiry[TODO]
-
-    // Surveys should close automatically after reaching max data points[TODO]
+    // Tests for survey closure on expiry and max data points are in ResponseManager.t.sol
 
     // Surveys can be closed manually, should not revert
     function testCloseSurveyManually() public {
