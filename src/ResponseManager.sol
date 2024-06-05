@@ -38,7 +38,8 @@ contract ResponseManager {
 
     // Update survey data point count
     surveyManager.updateSurveyDataPoints(_surveyId);
-
+     //Distribute Rewards after each response
+    rewardManager.distributeRewards(_surveyId, msg.sender);
     // Close survey if max data points reached / expiry time reached
     surveyManager.checkSurvey(_surveyId);
   }

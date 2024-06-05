@@ -151,7 +151,7 @@ contract ResponseManagerTest is Test {
 
         surveyManager.createSurvey("Test for last minute submissions", options, expiryTimestamp, maxDataPoints);
 
-        // Warp time to 1 second before survey expiry
+        // Warp time to just before before survey expiry
         vm.warp(expiryTimestamp - 1);
         responseManager.submitResponse(0, 0);
         address unregisteredUser = address(0x1234);
