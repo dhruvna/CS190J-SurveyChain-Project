@@ -19,8 +19,7 @@ contract ResponseManager {
 
   constructor(address _surveyManagerAddress, address payable _rewardManagerAddress) {
     surveyManager = SurveyManager(_surveyManagerAddress);
-            rewardManager = RewardManager(_rewardManagerAddress); // Initialize RewardManager
-
+      rewardManager = RewardManager(_rewardManagerAddress); // Initialize RewardManager
   }
 
   
@@ -31,13 +30,13 @@ contract ResponseManager {
     require(_selectedOption < survey.options.length, "Invalid option");
     require(survey.isActive, "Survey is not active");
     require(!hasResponded[_surveyId][msg.sender], "User has already responded to this survey");
-    
 
     surveyResponses[_surveyId].push(Response({
       surveyId: _surveyId,
       participant: msg.sender,
       selectedOption: _selectedOption
     }));
+    
     // Mark user as having responded
     hasResponded[_surveyId][msg.sender] = true;
     // Update survey data point count

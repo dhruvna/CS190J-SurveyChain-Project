@@ -11,7 +11,7 @@ contract ResponseManagerTest is Test {
     SurveyManager surveyManager;
     ResponseManager responseManager;
     RewardManager rewardManager;
-    
+
     function setUp() public {
         userManager = new UserManager();
         responseManager = new ResponseManager(address(0), payable(address(0))); // Placeholder to avoid circular dependency
@@ -21,6 +21,7 @@ contract ResponseManagerTest is Test {
         userManager.register("Alice");
     }
 
+    // Responses are submitted and stored in the contract, should not revert
     function testSubmitResponse() public {
         // Register a user and create a survey for testing response submission
         uint256[] memory options = new uint256[](3);
@@ -39,6 +40,7 @@ contract ResponseManagerTest is Test {
         assertEq(responses[0].selectedOption, 1);
     }
 
+    // Ensure only one response can be submitted per user per survey, should revert
     function testOnlyOneSubmissionPerID() public {
         uint256[] memory options = new uint256[](3);
         options[0] = 1;
@@ -57,7 +59,7 @@ contract ResponseManagerTest is Test {
         responseManager.submitResponse(0, 2);
     }
 
-
+    // Responses cannot be submitted to expired surveys, should revert
     function testSubmitResponseSurveyExpired() public {
         uint256[] memory options = new uint256[](3);
         options[0] = 1;
@@ -73,6 +75,7 @@ contract ResponseManagerTest is Test {
         responseManager.submitResponse(0, 1);
     }
 
+    // Ensure responses cannot be submitted once we reach the max data points, should revert
     function testSubmitResponseMaxDataPointsReached() public {
         // Create a survey with a max of 1 data point for this test
         uint256[] memory options = new uint256[](3);
@@ -92,6 +95,7 @@ contract ResponseManagerTest is Test {
         responseManager.submitResponse(0, 2);
     }
 
+    // Participants cannot select an option that does not exist in the survey, should revert
     function testSubmitResponseInvalidOption() public {
         uint256[] memory options = new uint256[](3);
         options[0] = 1;
@@ -106,6 +110,7 @@ contract ResponseManagerTest is Test {
         responseManager.submitResponse(0, 5); // Option 5 does not exist
     }
 
+    //  We can get responses for a survey, should not revert
     function testGetResponses() public {
         uint256[] memory options = new uint256[](3);
         options[0] = 1;
@@ -125,6 +130,7 @@ contract ResponseManagerTest is Test {
         assertEq(responses[0].participant, address(this));
     }
 
+    // Ensure anyone can submit a response without registration, should not revert
     function testSubmitResponseWithoutRegistration() public {
         uint256[] memory options = new uint256[](3);
         options[0] = 1;
@@ -145,6 +151,7 @@ contract ResponseManagerTest is Test {
         assertEq(responses[0].participant, unregisteredUser);
     }
 
+    // Ensure that responses can be submitted up until the last minute before survey expiry, should not revert
     function testLastMinuteSubmissions() public {
         uint256[] memory options = new uint256[](3);
         options[0] = 1;

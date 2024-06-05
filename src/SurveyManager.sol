@@ -33,6 +33,7 @@ contract SurveyManager {
         uint256 _reward
     ) public {
         require(bytes(userManager.getUsername(msg.sender)).length != 0, "User not registered");
+        require(bytes(_question).length > 0, "Question must not be empty");
         require(_options.length > 0, "Survey must have at least one option");
         require(_expiryTimestamp > block.timestamp, "Expiry timestamp must be in the future");
         require(_maxDataPoints > 0, "Max data points must be greater than zero");
@@ -53,12 +54,14 @@ contract SurveyManager {
         nextSurveyId++;
     }
 
+    // Update survey data points when a user responds to a survey
     function updateSurveyDataPoints(uint256 _surveyId) external {
         Survey storage survey = surveys[_surveyId];
         survey.numResponses++;
         checkSurvey(_surveyId);
     }
 
+    // Close survey if it has expired or reached max data points
     function closeSurvey(uint256 _surveyId) internal {
         Survey storage survey = surveys[_surveyId];
         require(survey.isActive, "Survey is already closed!");
@@ -71,12 +74,14 @@ contract SurveyManager {
         }
     }
 
+    // Close survey manually by the creator
     function closeSurveyManually(uint256 _surveyId) external {
         Survey storage survey = surveys[_surveyId];
         require(survey.creator == msg.sender, "Only the survey creator can close the survey");
         closeSurvey(_surveyId);
     }
     
+    // Check if survey is active and if it needs to be closed
     function checkSurvey(uint256 _surveyId) public {
         Survey storage survey = surveys[_surveyId];
         console.log("Checking Survey:", survey.question);
@@ -90,12 +95,13 @@ contract SurveyManager {
         }
     }
 
-    //returns survey data, also ensure survey is checked to see if it needs to be closed before returning
+    // Get survey data
     function getSurvey(uint256 _surveyId) public returns (Survey memory) {
-        checkSurvey(_surveyId); // Call checkSurvey before returning the survey data
+        checkSurvey(_surveyId);
         return surveys[_surveyId];
     }
 
+    // Returns all active surveys
     function getActiveSurveys() public view returns (Survey[] memory) {
         uint256 activeSurveyCount = 0;
         for (uint256 i = 0; i < nextSurveyId; i++) {

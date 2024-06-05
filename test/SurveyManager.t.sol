@@ -21,8 +21,10 @@ contract SurveyManagerTest is Test {
         responseManager = new ResponseManager(address(surveyManager), payable(address(rewardManager)));
 
     }
+    // Survey Tests Section 1
+    // - Intentionally fail each of the checks within createSurvey of SurveyManager.sol
 
-    //write test cases that intentionally fail each of the checks within createSurvey of SurveyManager.sol
+    //Only registered users can create surveys, should revert
     function testCreateSurveyUserNotRegistered() public {
         vm.expectRevert("User not registered");
         uint256[] memory options = new uint256[](3);
@@ -36,6 +38,23 @@ contract SurveyManagerTest is Test {
         surveyManager.createSurvey("Test for User Not Registered", options, expiryTimestamp, maxDataPoints, 1 ether);
     }
 
+    // Survey question must not be empty, should revert
+    function testCreateSurveyNoQuestion() public {
+        userManager.register("Alice");
+        vm.expectRevert("Question must not be empty");
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+
+        uint256 expiryTimestamp = block.timestamp + 1 days;
+        uint256 maxDataPoints = 100;
+
+        surveyManager.createSurvey("", options, expiryTimestamp, maxDataPoints, 1 ether);
+    }
+
+    // Survey must have at least one option, should revert
+    // No need to ensure they are numbers, as we will have a compilation error if uint256 is not used
     function testCreateSurveyNoOptions() public {
         userManager.register("Alice");
         vm.expectRevert("Survey must have at least one option");
@@ -47,6 +66,7 @@ contract SurveyManagerTest is Test {
         surveyManager.createSurvey("Test for at least 1 option", options, expiryTimestamp, maxDataPoints, 1 ether);
     }
 
+    // Survey expiry timestamp must be in the future, should revert
     function testCreateSurveyExpiryTimestampInPast() public {
         userManager.register("David");
         vm.expectRevert("Expiry timestamp must be in the future");
@@ -61,6 +81,7 @@ contract SurveyManagerTest is Test {
         surveyManager.createSurvey("Test for a future expiry timestamp", options, expiryTimestamp, maxDataPoints, 1 ether);
     }
 
+    // Max data points must be greater than zero, should revert
     function testCreateSurveyMaxDataPointsZero() public {
         userManager.register("Alice");
         vm.expectRevert("Max data points must be greater than zero");
@@ -75,6 +96,7 @@ contract SurveyManagerTest is Test {
         surveyManager.createSurvey("Test for multiple max data points", options, expiryTimestamp, maxDataPoints, 1 ether);
     }
 
+    // Surveys must have some reward for users, should revert
     function testCreateSurveyNoReward() public {
         userManager.register("Alice");
         vm.expectRevert("Reward must be greater than zero");
@@ -86,6 +108,10 @@ contract SurveyManagerTest is Test {
         surveyManager.createSurvey("Test for reward greater than zero", options, block.timestamp + 1 days, 100, 0 ether);
     }
 
+    // Survey Tests Section 2
+    // - Test successful survey creation, survey attributes, and getting active surveys
+
+    // Survey should be created successfully, should not revert
     function testCreateSurvey() public {
         userManager.register("Bob");
         uint256[] memory options = new uint256[](2);
@@ -98,6 +124,7 @@ contract SurveyManagerTest is Test {
         surveyManager.createSurvey("Test for successful survey creation", options, expiryTimestamp, maxDataPoints, 1 ether);
     }
 
+    // Ensure that we can get survey attributes after creation, should not revert
     function testSurveyAttributes() public {
         userManager.register("Charlie");
         uint256[] memory options = new uint256[](4);
@@ -123,6 +150,7 @@ contract SurveyManagerTest is Test {
         assertEq(survey.reward, 4 ether);
     }
 
+    // Ensure that we can get multiple survey attributes after creation, should not revert
     function testGetActiveSurveys() public {
         userManager.register("Alice");
         uint256[] memory options1 = new uint256[](3);
@@ -151,6 +179,14 @@ contract SurveyManagerTest is Test {
         assertEq(activeSurveys[1].question, "Test for getting more than one active survey");
     }
 
+    // Survey Tests Section 3
+    // Survey Closure
+
+    // Surveys should close automatically after expiry[TODO]
+
+    // Surveys should close automatically after reaching max data points[TODO]
+
+    // Surveys can be closed manually, should not revert
     function testCloseSurveyManually() public {
         userManager.register("Bob");
         uint256[] memory options = new uint256[](2);
@@ -167,6 +203,7 @@ contract SurveyManagerTest is Test {
         assertEq(survey.isActive, false);
     }
 
+    // Only the survey creator can close the survey manually, should revert
     function testOnlyOwnerCanCloseSurveyManually() public {
         userManager.register("Bob");
         uint256[] memory options = new uint256[](2);

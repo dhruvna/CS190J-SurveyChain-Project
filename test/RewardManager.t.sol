@@ -30,6 +30,7 @@ contract RewardManagerTest is Test {
         responseManager.submitResponse(0, 1);
     }
 
+    // Correct amount of rewards should be distributed to the participant, should not revert
     function testDistributeRewards() public {
         // Ensure the contract has enough Ether to distribute
         vm.deal(address(rewardManager), 100 ether);
@@ -40,6 +41,7 @@ contract RewardManagerTest is Test {
         assertEq(rewardManager.rewards(participant), 5 ether);
     }
 
+    // Rewards mustbe claimable by participants, should not revert
     function testClaimReward() public {
         address participant = address(this);
 
@@ -65,6 +67,8 @@ contract RewardManagerTest is Test {
         assert(finalBalance == initialBalance + 6 ether);
     }
 
+    //Full survey lifecycle test[createSurvey -> submitResponse -> distributeRewards -> claimReward] [TODO]
+    
     receive() external payable {
         console.log("Received Ether:", msg.value);
     }
