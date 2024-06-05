@@ -6,7 +6,7 @@ import "../src/UserManager.sol";
 import "../src/SurveyManager.sol";
 import "../src/ResponseManager.sol";
 import "../src/RewardManager.sol";
-import {ReentrantContract} from "./rewardAttacker.sol";
+import {ReentrantContract} from "./RewardAttacker.sol";
 
 contract RewardManagerTest is Test {
     UserManager userManager;
@@ -77,7 +77,7 @@ contract RewardManagerTest is Test {
         vm.expectRevert();
         rewardManager.distributeRewards(0, user, 2);
     }
-    // test reetnrancy with an attacker contract 
+    // test re-entrancy with an attacker contract 
     function testReentrancyAttack() public {
         // ensure the contract has enough Ether to distribute
         vm.deal(address(rewardManager), 10 ether);
