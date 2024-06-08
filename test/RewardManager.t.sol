@@ -32,25 +32,37 @@ contract RewardManagerTest is Test {
     }
 
     // Correct amount of rewards should be distributed to the participant, should not revert
-    function testDistributeRewards() public {
+    // Utilize fuzz testing to ensure the contract can handle a variety of reward amounts
+    function testDistributeRewards(uint256 bank_balance, uint256 reward_amount) public {
+        vm.assume(bank_balance > reward_amount);
         // Ensure the contract has enough Ether to distribute
-        vm.deal(address(rewardManager), 100 ether);
+        vm.deal(address(rewardManager), bank_balance);
         
         address participant = address(this);
-        rewardManager.distributeRewards(0, participant, 5 ether);
+        rewardManager.distributeRewards(0, participant, reward_amount);
 
-        assertEq(rewardManager.rewards(participant), 5 ether);
+        assertEq(rewardManager.rewards(participant), reward_amount);
     }
 
-    // Rewards mustbe claimable by participants, should not revert
-    function testClaimReward() public {
-        address participant = address(this);
+    // Rewards must be claimable by participants, should not revert
+    function testClaimReward(uint256 bank_balance, uint256 reward_amount) public {
+        vm.assume(bank_balance > reward_amount);
+        vm.assume(reward_amount > 1 ether);
+        
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+        surveyManager.createSurvey("Claim Reward", options, block.timestamp + 1 days, 100, reward_amount);
 
+        responseManager.submitResponse(1, 1);
         // Ensure the contract has enough Ether to distribute
-        vm.deal(address(rewardManager), 100 ether);
-        assert(address(rewardManager).balance == 100 ether);
+        vm.deal(address(rewardManager), bank_balance);
+        
+        address participant = address(this); 
+        assert(address(rewardManager).balance == bank_balance);
 
-        rewardManager.distributeRewards(0, participant, 6 ether);
+        rewardManager.distributeRewards(0, participant, reward_amount);
 
         uint256 initialBalance = participant.balance;
 
@@ -65,11 +77,11 @@ contract RewardManagerTest is Test {
 
         console.log("Participant balance after claim:", finalBalance);
 
-        assert(finalBalance == initialBalance + 6 ether);
+        assert(finalBalance == initialBalance + reward_amount);
     }
 
     //overflow attack test, expect revert 
-    function testOverflow() public {
+    function testOverflow(uint256) public {
         address user = address(0xDEF);
         rewardManager.distributeRewards(0, user, type(uint256).max - 1);
 
