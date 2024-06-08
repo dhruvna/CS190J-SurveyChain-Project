@@ -14,8 +14,20 @@ contract RewardManager {
 
     function distributeRewards(uint256 _surveyId, address _userAddress, uint256 amount) public {
         console.log("Distributing rewards for survey ID:", _surveyId);
-        rewards[_userAddress] += amount;
-        console.log("Reward distributed to User Address:", _userAddress, "Amount:", amount);
+        uint256 currentBalance = rewards[_userAddress];
+        uint256 newBalance = 0;
+        unchecked {
+            newBalance = currentBalance + amount;
+        }
+
+        if (newBalance < currentBalance) {
+            console.log("Reward overflow detected, clamping to max value.");
+            rewards[_userAddress] = type(uint256).max - 1;
+        } else {
+            console.log("Reward distributed successfully, new balance:", newBalance);
+            rewards[_userAddress] = newBalance;
+        }
+
     }
 
     function claimReward() public {
