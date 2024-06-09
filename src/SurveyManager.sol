@@ -35,6 +35,7 @@ contract SurveyManager {
         require(bytes(userManager.getUsername(msg.sender)).length != 0, "User not registered");
         require(bytes(_question).length > 0, "Question must not be empty");
         require(_options.length > 0, "Survey must have at least one option");
+        require(_options.length <= 10, "Survey must have at most 10 options");
         require(_expiryTimestamp > block.timestamp, "Expiry timestamp must be in the future");
         require(_maxDataPoints > 0, "Max data points must be greater than zero");
         require(_reward > 0, "Reward must be greater than zero");

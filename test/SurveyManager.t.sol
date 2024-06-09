@@ -112,16 +112,14 @@ contract SurveyManagerTest is Test {
     // - Test successful survey creation, survey attributes, and getting active surveys
 
     // Survey should be created successfully, should not revert
-    function testCreateSurvey() public {
+    function testFuzz_CreateSurvey(uint256[] memory options, uint256 maxPoints, uint256 reward) public {
         userManager.register("Bob");
-        uint256[] memory options = new uint256[](2);
-        options[0] = 5;
-        options[1] = 10;
+        vm.assume(options.length > 0 && options.length <= 10);
+        vm.assume(maxPoints > 0 && reward > 0);
 
         uint256 expiryTimestamp = block.timestamp + 2 days;
-        uint256 maxDataPoints = 50;
 
-        surveyManager.createSurvey("Test for successful survey creation", options, expiryTimestamp, maxDataPoints, 1 ether);
+        surveyManager.createSurvey("Test for successful survey creation", options, expiryTimestamp, maxPoints, reward);
     }
 
     // Ensure that we can get survey attributes after creation, should not revert
