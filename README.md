@@ -17,8 +17,8 @@ This project is a blockchain-based survey system that allows users to create, pa
 - Can register, create surveys, submit responses, and claim rewards.
 - Can view surveys and their responses.
 #### Anonymous User
-- Can participant in surveys.
-- Cannot create surveys, claim rewards.
+- Can participate in surveys.
+- Cannot create surveys or claim rewards.
 - **Register User**
   - **Function:** `register(string memory _username)`
   - **Description:** Registers a new user in the system with a given username.
@@ -43,10 +43,10 @@ This project is a blockchain-based survey system that allows users to create, pa
   - **Notes:** Only callable for registered users. Throws an error if the user is not registered.
 
 - **Increase Reputation**
-  - **Function:** `increaseReputation(address _userAddress, uint256 _reputationEarned)`
+  - **Function:** `increaseReputation(address _userAddress, uint256 _surveyValue) public`
   - **Description:** Increases the reputation of a registered user by the amount specified.
   - **Returns:** None.
-  - **Notes:** Only callable for registered users. Logs a message without updating any value if the user is not registered. If a user's reputation would increase above the maximum, clamp to the maximum value. 
+  - **Notes:** Only callable for registered users. Logs a message without updating any value if the user is not registered. If a user's reputation would increase above the maximum, clamps to the maximum value.
 
 ### SurveyManager
 
@@ -98,7 +98,6 @@ This project is a blockchain-based survey system that allows users to create, pa
   - **Function:** `getResponses(uint256 _surveyId) public view returns (Response[] memory)`
   - **Description:** Retrieves all responses for a specified survey.
   - **Returns:** `Response[]` array containing responses for the survey.
-
 
 ### RewardManager
 
@@ -153,13 +152,6 @@ This project is a blockchain-based survey system that allows users to create, pa
     - Registers a user with the username "Alice".
     - Expects a revert with the message "Blockchain address already registered to an account" when attempting to register again with a different username.
 
-### SurveyManagerTest
-
-- **Setup**
-  - **Function:** `setUp() public`
-  - **Description:** Initializes the `UserManager`, `SurveyManager`, `RewardManager`, and `ResponseManager` contracts before each test.
-  - **Returns:** None.
-
 #### Survey Tests Section 1: Invalid Survey Creation Scenarios
 
 - **Test Create Survey - User Not Registered**
@@ -201,10 +193,9 @@ This project is a blockchain-based survey system that allows users to create, pa
 #### Survey Tests Section 2: Valid Survey Creation Scenarios
 
 - **Test Create Survey**
-  - **Function:** `testCreateSurvey() public`
+  - **Function:** `testFuzz_CreateSurvey(uint256[] memory options, uint256 maxPoints, uint256 reward) public`
   - **Description:** Ensures that a survey can be created successfully.
   - **Returns:** None.
-  - **Assertions:** Verifies that the survey is created without any reverts.
 
 - **Test Survey Attributes**
   - **Function:** `testSurveyAttributes() public`
@@ -234,7 +225,6 @@ This project is a blockchain-based survey system that allows users to create, pa
   - **Description:** Ensures that only the survey creator can close the survey manually.
   - **Returns:** None.
   - **Assertions:** Expects a revert with the message "Only the survey creator can close the survey" when an unauthorized user attempts to close the survey.
-
 
 ### ResponseManagerTest
 
@@ -328,6 +318,36 @@ This project is a blockchain-based survey system that allows users to create, pa
 #### Reward Distribution and Claim Tests
 
 - **Test Distribute Rewards**
+  - **Function:** `testDistributeRewards(uint256 bank_balance, uint256 reward_amount) public`
+  - **Description:** Ensures that the correct amount of rewards is distributed to the participant.
+  - **Returns:** None.
+  - **Assertions:** 
+    - Verifies that the rewards are correctly added to the participant's reward balance.
+
+- **Test Claim Reward**
+  - **Function:** `testClaimReward(uint256 bank_balance, uint256 reward_amount) public`
+  - **Description:** Ensures that rewards can be claimed by participants.
+  - **Returns:** None.
+  - **Assertions:** 
+    - Verifies that the participant's balance is correctly increased by the reward amount after claiming.
+
+#### Security Tests
+- **Test Reputation Overflow Attack**
+  - **Function:** `testReputationOverflow() public`
+  - **Description:** Ensures that an overflow attack is prevented when increasing user reputation.
+  - **Returns:** None.
+  - **Assertions:** The increaseReputation() function within UserManager should handle overflow gracefully.
+
+### RewardManagerTest
+
+- **Setup**
+  - **Function:** `setUp() public`
+  - **Description:** Initializes the `UserManager`, `SurveyManager`, `ResponseManager`, and `RewardManager` contracts before each test. Registers a user "Alice" and creates a survey for testing reward distribution.
+  - **Returns:** None.
+
+#### Reward Distribution and Claim Tests
+
+- **Test Distribute Rewards**
   - **Function:** `testDistributeRewards() public`
   - **Description:** Ensures that the correct amount of rewards is distributed to the participant.
   - **Returns:** None.
@@ -344,7 +364,7 @@ This project is a blockchain-based survey system that allows users to create, pa
 #### Security Tests
 
 - **Test Overflow Attack**
-  - **Function:** `testOverflow() public`
+  - **Function:** `testOverflow(uint256 amount) public`
   - **Description:** Ensures that an overflow attack is prevented when distributing rewards.
   - **Returns:** None.
   - **Assertions:** Expects a revert when attempting to overflow the rewards balance.
