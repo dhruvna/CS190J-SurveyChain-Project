@@ -16,11 +16,19 @@ contract SurveyManager {
         bool isActive;
         uint256 reward;
     }
+        struct Commitment {
+        bytes32 hash;
+        bool revealed;
+    }
 
     UserManager userManager;
     uint256 public nextSurveyId;
     mapping(uint256 => Survey) public surveys;
+    mapping(uint256 => mapping(address => Commitment)) public commitments;
+        mapping(uint256 => mapping(address => uint256)) public revealedResponses;
     
+
+
     constructor(address _userManagerAddress) {
         userManager = UserManager(_userManagerAddress);
     }
@@ -54,6 +62,35 @@ contract SurveyManager {
         console.log("Survey number:", nextSurveyId, "created with description:", _question);
         nextSurveyId++;
     }
+
+    function commitResponse(uint256 _surveyId, bytes32 _commitmentHash) public {
+        require(surveys[_surveyId].isActive, "Survey is not active");
+        commitments[_surveyId][msg.sender] = Commitment({
+            hash: _commitmentHash,
+            revealed: false
+        });
+    }
+
+    function revealResponse(uint256 _surveyId, uint256 _selectedOption, bytes32 _nonce) public {
+        Commitment storage commitment = commitments[_surveyId][msg.sender];
+        require(commitment.hash != 0, "No commitment found");
+        require(!commitment.revealed, "Response already revealed");
+
+        bytes32 commitmentHash = keccak256(abi.encodePacked(_selectedOption, _nonce));
+        require(commitmentHash == commitment.hash, "Invalid reveal");
+
+        commitment.revealed = true;
+        revealedResponses[_surveyId][msg.sender] = _selectedOption;
+        surveys[_surveyId].numResponses++;
+
+        checkSurvey(_surveyId);
+    }
+
+    //getter for other contracts to check the creator 
+    function getSurveyCreator(uint256 _surveyId) public view returns (address) {
+        return surveys[_surveyId].creator;
+    }
+
 
     // Update survey data points when a user responds to a survey
     function updateSurveyDataPoints(uint256 _surveyId) external {

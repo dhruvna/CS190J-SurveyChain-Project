@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "../src/UserManager.sol";
 import "../src/SurveyManager.sol";
 import "../src/ResponseManager.sol";
+import "../test/frontRunnerAttacker.sol";
 
 contract ResponseManagerTest is Test {
     UserManager userManager;
@@ -218,4 +219,60 @@ contract ResponseManagerTest is Test {
         vm.prank(user);
         userManager.increaseReputation(user, 2);
     }
+
+
+
+    // Check a front running attack fails 
+
+    function testFrontRunningAttack() public {
+        // Initialize the attacker contract
+        FrontRunningAttacker attackerContract = new FrontRunningAttacker(address(surveyManager), address(responseManager));
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+        surveyManager.createSurvey("Front Running Test Survey", options, block.timestamp + 1 days, 100, 1 ether);
+    
+        // Legitimate user (Alice) submits a response
+        address Alice = address(0xABC);
+        vm.prank(Alice);
+        responseManager.submitResponse(0, 1);
+
+        // Attacker  attempts to front-run with the same survey and option
+        address attacker = address(attackerContract);
+        vm.prank(attacker);
+        attackerContract.attack(0, 2);
+
+        surveyManager.closeSurveyManually(0);
+
+        // Fetch responses to verify the order
+        ResponseManager.Response[] memory responses = responseManager.getResponses(0);
+
+        // Check that Alice's response was submitted
+        assertEq(responses[0].participant, address(Alice));
+        assertEq(responses[0].selectedOption, 1);
+
+        // Check that the attacker's response was submitted
+        assertEq(responses[1].participant, address(attacker));
+        assertEq(responses[1].selectedOption, 2);
+
+        uint256[] memory revealedOptions = new uint256[](2);
+        revealedOptions[0] = 1;
+        revealedOptions[1] = 2;
+
+
+        bytes32[] memory nonces = new bytes32[](2);
+        nonces[0] = responseManager.nonces(0, address(Alice));
+        nonces[1] = responseManager.nonces(0, address(attacker));
+
+        vm.prank(surveyManager.getSurveyCreator(0));
+        responseManager.revealResponses(0, revealedOptions, nonces);
+        // Verify that the legitimate response is processed correctly
+        assertEq(responseManager.getRevealedResponse(0, address(Alice)), 1);
+        assertEq(responseManager.getRevealedResponse(0, address(attacker)), 2);
+
+        // Additional checks to ensure survey state
+        assertEq(surveyManager.getSurvey(0).numResponses, 2);
+    }
+
 }
