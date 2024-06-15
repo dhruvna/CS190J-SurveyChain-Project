@@ -41,6 +41,7 @@ contract ResponseManagerTest is Test {
     }
 
     // Ensure only one response can be submitted per user per survey, should revert
+    // PENETRATION TEST: Attacker cannot abuse our system and submit multiple responses
     function testOnlyOneSubmissionPerID() public {
         uint256[] memory options = new uint256[](3);
         options[0] = 1;
@@ -76,6 +77,7 @@ contract ResponseManagerTest is Test {
     }
 
     // Ensure responses cannot be submitted once we reach the max data points, should revert
+    // PENETRATION TEST: Attacker cannot submit a response when the data points are final
     function testSubmitResponseMaxDataPointsReached() public {
         // Create a survey with a max of 1 data point for this test
         uint256[] memory options = new uint256[](3);
@@ -96,6 +98,7 @@ contract ResponseManagerTest is Test {
     }
 
     // Participants cannot select an option that does not exist in the survey, should revert
+    // PENETRATION TEST: Attacker cannot select an invalid option to break our surveys
     function testSubmitResponseInvalidOption() public {
         uint256[] memory options = new uint256[](3);
         options[0] = 1;
@@ -209,6 +212,7 @@ contract ResponseManagerTest is Test {
     }
 
     // Check that we have protection in place for reputation overflow, should not revert
+    // PENETRATION TEST: Prevent an overflow attack 
     function testReputationOverflow() public {
         address user = address(0xDEF);
         vm.prank(user);
@@ -218,4 +222,51 @@ contract ResponseManagerTest is Test {
         vm.prank(user);
         userManager.increaseReputation(user, 2);
     }
+
+
+
+    // Check a front running attack fails 
+    // PENETRATION TEST: Prevent a front running attacker from beating out survey responses with higher gas  
+    function testPreventFrontRunning() public {
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+        surveyManager.createSurvey("Front Running Test Survey", options, block.timestamp + 1 days, 100, 1 ether);
+
+        // Legitimate user (Alice) and Attacker register and commit their responses
+        address Alice = address(0xABC);
+        address attacker = address(0x123);
+
+        vm.prank(Alice);
+        userManager.register("Alice");
+
+        vm.prank(attacker);
+        userManager.register("Attacker");
+
+        // Both users commit their responses
+        vm.prank(Alice);
+        responseManager.submitResponse{gas: 300000}(0, 1);
+        // Attacker gives more gas to get processed first
+        vm.prank(attacker);
+        responseManager.submitResponse{gas: 300001}(0, 2);
+
+        // Fetch committed responses to verify the commit phase
+        ResponseManager.Response[] memory responses = responseManager.getResponses(0);
+
+        // Check that both responses are committed
+        assertEq(responses.length, 2);
+        assertEq(responses[0].participant, address(Alice));
+        assertEq(responses[1].participant, address(attacker));
+
+        // Move time forward to end commit phase
+        vm.warp(block.timestamp + 2 days);
+
+
+        // Verify that the legitimate response is processed first in the responses
+        responses = responseManager.getResponses(0);
+        assertEq(responses[0].selectedOption, 1);
+        assertEq(responses[1].selectedOption, 2);
+    }
+
 }
