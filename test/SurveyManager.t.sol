@@ -178,6 +178,12 @@ contract SurveyManagerTest is Test {
         assertEq(activeSurveys[1].question, "Test for getting more than one active survey");
     }
 
+    // Ensure that getting a non-existent survey reverts with the correct message
+    function testGetNonExistentSurvey() public {
+        vm.expectRevert("Survey does not exist");
+        surveyManager.getSurvey(1); // Survey with ID 1 does not exist
+    }
+
     // Survey Tests Section 3
     // Survey Closure
     // Tests for survey closure on expiry and max data points are in ResponseManager.t.sol
