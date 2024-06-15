@@ -134,6 +134,7 @@ contract SurveyManager {
 
     // Get survey data
     function getSurvey(uint256 _surveyId) public returns (Survey memory) {
+        require(_surveyId < nextSurveyId, "Survey does not exist");
         checkSurvey(_surveyId);
         return surveys[_surveyId];
     }
