@@ -25,7 +25,7 @@ contract SurveyManagerTest is Test {
     // - Intentionally fail each of the checks within createSurvey of SurveyManager.sol
 
     //Only registered users can create surveys, should revert
-    // PENETRATION TEST: Attackers cannot join in on creaitng surveys anonymously 
+    // PENETRATION TEST: Attackers cannot join in on creating surveys anonymously 
     function testCreateSurveyUserNotRegistered() public {
         vm.expectRevert("User not registered");
         uint256[] memory options = new uint256[](3);
@@ -200,7 +200,7 @@ contract SurveyManagerTest is Test {
     }
 
     // Only the survey creator can close the survey manually, should revert
-    // PENETRATION TEST: Prevent attackers from cloinsg our surveys prematurely. 
+    // PENETRATION TEST: Prevent attackers from closing our surveys prematurely. 
     function testOnlyOwnerCanCloseSurveyManually() public {
         userManager.register("Bob");
         uint256[] memory options = new uint256[](2);
