@@ -76,6 +76,7 @@ contract RewardManagerTest is Test {
     }
 
     //overflow attack test, expect revert 
+    // PENETRATION TEST: Prevent overflow attackers 
     function testOverflow(uint256 amount) public {
         address user = address(0xDEF);
         rewardManager.distributeRewards(0, user, type(uint256).max - 1);
@@ -83,7 +84,10 @@ contract RewardManagerTest is Test {
         // Test: Adding any amount should overflow, but we should be handling it just fine.
         rewardManager.distributeRewards(0, user, amount);
     }
+
+
     // test re-entrancy with an attacker contract 
+    // PENETRATION TEST: prevent a reetrant attacker from claiming more rewards than they deserve
     function testReentrancyAttack() public {
         // ensure the contract has enough Ether to distribute
         vm.deal(address(rewardManager), 10 ether);

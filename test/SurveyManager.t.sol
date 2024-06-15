@@ -25,6 +25,7 @@ contract SurveyManagerTest is Test {
     // - Intentionally fail each of the checks within createSurvey of SurveyManager.sol
 
     //Only registered users can create surveys, should revert
+    // PENETRATION TEST: Attackers cannot join in on creaitng surveys anonymously 
     function testCreateSurveyUserNotRegistered() public {
         vm.expectRevert("User not registered");
         uint256[] memory options = new uint256[](3);
@@ -199,6 +200,7 @@ contract SurveyManagerTest is Test {
     }
 
     // Only the survey creator can close the survey manually, should revert
+    // PENETRATION TEST: Prevent attackers from cloinsg our surveys prematurely. 
     function testOnlyOwnerCanCloseSurveyManually() public {
         userManager.register("Bob");
         uint256[] memory options = new uint256[](2);
@@ -215,4 +217,41 @@ contract SurveyManagerTest is Test {
         vm.expectRevert("Only the survey creator can close the survey");
         surveyManager.closeSurveyManually(0);
     }
+
+// PENETRATION TEST: Ensure creating a survey with an extremely large maxDataPoints does not cause any overflow issues
+    function testSurveyCreationMaxDataPointsOverflow() public {
+        userManager.register("Charlie");
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+
+        uint256 largeMaxDataPoints = type(uint128).max;
+        surveyManager.createSurvey("Overflow maxDataPoints", options, block.timestamp + 1 days, largeMaxDataPoints, 1 ether);
+
+        SurveyManager.Survey memory survey = surveyManager.getSurvey(0);
+        assertEq(survey.maxDataPoints, largeMaxDataPoints);
+    }
+
+    // PENETRATION TEST: Ensure that increasing the number of responses does not cause overflow
+    function testSurveyResponsesOverflow() public {
+        userManager.register("Charlie");
+        uint256[] memory options = new uint256[](3);
+        options[0] = 1;
+        options[1] = 2;
+        options[2] = 3;
+
+        surveyManager.createSurvey("Responses Overflow Test", options, block.timestamp + 1 days, type(uint128).max, 1 ether);
+        uint256 surveyId = 0;
+
+        // Simulate adding a large number of responses
+        for (uint256 i = 0; i < 10; i++) {
+            surveyManager.updateSurveyDataPoints(surveyId);
+        }
+
+        SurveyManager.Survey memory survey = surveyManager.getSurvey(surveyId);
+        assertEq(survey.numResponses, 10);
+    }
+
+
 }
