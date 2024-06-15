@@ -91,7 +91,6 @@ contract SurveyManager {
         return surveys[_surveyId].creator;
     }
 
-
     // Update survey data points when a user responds to a survey
     function updateSurveyDataPoints(uint256 _surveyId) external {
         Survey storage survey = surveys[_surveyId];

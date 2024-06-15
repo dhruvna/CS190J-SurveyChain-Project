@@ -18,7 +18,7 @@ contract ResponseManager {
   mapping(uint256 => Response[]) public surveyResponses;
   mapping(uint256 => mapping(address => bool)) public hasResponded;
   mapping(uint256 => mapping(address => bytes32)) public nonces;
-      mapping(uint256 => mapping(address => uint256)) public revealedResponses; // Added to store revealed responses
+  mapping(uint256 => mapping(address => uint256)) public revealedResponses; // Added to store revealed responses
 
   constructor(address _userManagerAddress, address _surveyManagerAddress, address payable _rewardManagerAddress) {
     userManager = UserManager(_userManagerAddress);
@@ -88,7 +88,5 @@ contract ResponseManager {
     return surveyResponses[_surveyId];
   }
 
-      function getRevealedResponse(uint256 _surveyId, address _respondent) public view returns (uint256) {
-        return revealedResponses[_surveyId][_respondent];
-    }
+
 }

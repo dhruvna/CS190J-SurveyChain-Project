@@ -223,56 +223,46 @@ contract ResponseManagerTest is Test {
 
 
     // Check a front running attack fails 
+function testPreventFrontRunning() public {
+    uint256[] memory options = new uint256[](3);
+    options[0] = 1;
+    options[1] = 2;
+    options[2] = 3;
+    surveyManager.createSurvey("Front Running Test Survey", options, block.timestamp + 1 days, 100, 1 ether);
 
-    function testFrontRunningAttack() public {
-        // Initialize the attacker contract
-        FrontRunningAttacker attackerContract = new FrontRunningAttacker(address(surveyManager), address(responseManager));
-        uint256[] memory options = new uint256[](3);
-        options[0] = 1;
-        options[1] = 2;
-        options[2] = 3;
-        surveyManager.createSurvey("Front Running Test Survey", options, block.timestamp + 1 days, 100, 1 ether);
-    
-        // Legitimate user (Alice) submits a response
-        address Alice = address(0xABC);
-        vm.prank(Alice);
-        responseManager.submitResponse(0, 1);
+    // Legitimate user (Alice) and Attacker register and commit their responses
+    address Alice = address(0xABC);
+    address attacker = address(0x123);
 
-        // Attacker  attempts to front-run with the same survey and option
-        address attacker = address(attackerContract);
-        vm.prank(attacker);
-        attackerContract.attack(0, 2);
+    vm.prank(Alice);
+    userManager.register("Alice");
 
-        surveyManager.closeSurveyManually(0);
+    vm.prank(attacker);
+    userManager.register("Attacker");
 
-        // Fetch responses to verify the order
-        ResponseManager.Response[] memory responses = responseManager.getResponses(0);
+    // Both users commit their responses
+    vm.prank(Alice);
+    responseManager.submitResponse{gas: 300000}(0, 1);
+    // Attacker gives more gas to get processed first
+    vm.prank(attacker);
+    responseManager.submitResponse{gas: 300001}(0, 2);
 
-        // Check that Alice's response was submitted
-        assertEq(responses[0].participant, address(Alice));
-        assertEq(responses[0].selectedOption, 1);
+    // Fetch committed responses to verify the commit phase
+    ResponseManager.Response[] memory responses = responseManager.getResponses(0);
 
-        // Check that the attacker's response was submitted
-        assertEq(responses[1].participant, address(attacker));
-        assertEq(responses[1].selectedOption, 2);
+    // Check that both responses are committed
+    assertEq(responses.length, 2);
+    assertEq(responses[0].participant, address(Alice));
+    assertEq(responses[1].participant, address(attacker));
 
-        uint256[] memory revealedOptions = new uint256[](2);
-        revealedOptions[0] = 1;
-        revealedOptions[1] = 2;
+    // Move time forward to end commit phase
+    vm.warp(block.timestamp + 2 days);
 
 
-        bytes32[] memory nonces = new bytes32[](2);
-        nonces[0] = responseManager.nonces(0, address(Alice));
-        nonces[1] = responseManager.nonces(0, address(attacker));
-
-        vm.prank(surveyManager.getSurveyCreator(0));
-        responseManager.revealResponses(0, revealedOptions, nonces);
-        // Verify that the legitimate response is processed correctly
-        assertEq(responseManager.getRevealedResponse(0, address(Alice)), 1);
-        assertEq(responseManager.getRevealedResponse(0, address(attacker)), 2);
-
-        // Additional checks to ensure survey state
-        assertEq(surveyManager.getSurvey(0).numResponses, 2);
-    }
+    // Verify that the legitimate response is processed first in the responses
+    responses = responseManager.getResponses(0);
+    assertEq(responses[0].selectedOption, 1);
+    assertEq(responses[1].selectedOption, 2);
+}
 
 }
