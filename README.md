@@ -341,21 +341,6 @@ This project is a blockchain-based survey system that allows users to create, pa
   - **Assertions:** 
     - Verifies that the participant's balance is correctly increased by the reward amount after claiming.
 
-#### Security Tests
-
-- **Test Overflow Attack**
-  - **Function:** `testOverflow() public`
-  - **Description:** Ensures that an overflow attack is prevented when distributing rewards.
-  - **Returns:** None.
-  - **Assertions:** Expects a revert when attempting to overflow the rewards balance.
-
-- **Test Reentrancy Attack**
-  - **Function:** `testReentrancyAttack() public`
-  - **Description:** Ensures that the contract is protected against reentrancy attacks when claiming rewards.
-  - **Returns:** None.
-  - **Assertions:** 
-    - Verifies that no extra Ether is claimed through a reentrant attack.
-
 #### Ether Handling Tests
 
 - **Receive Ether**
@@ -369,6 +354,81 @@ This project is a blockchain-based survey system that allows users to create, pa
   - **Description:** Handles fallback functionality for the contract.
   - **Returns:** None.
   - **Notes:** Logs the amount of Ether received.
+ 
+## Penetrative Tests
+
+### ResponseManagerTest
+
+- **Test Only One Submission Per User Per Survey**
+  - **Function:** `testOnlyOneSubmissionPerID() public`
+  - **Description:** Ensures that only one response can be submitted per user per survey.
+  - **Security Issue:** Prevents multiple submissions by the same user.
+  - **Assertions:** Expects a revert with the message "User has already responded to this survey" when attempting a second submission.
+
+- **Test Submit Response When Max Data Points Reached**
+  - **Function:** `testSubmitResponseMaxDataPointsReached() public`
+  - **Description:** Ensures that responses cannot be submitted once the maximum data points are reached.
+  - **Security Issue:** Prevents exceeding the maximum data points limit.
+  - **Assertions:** Expects a revert with the message "Max data points reached".
+
+- **Test Submit Response with Invalid Option**
+  - **Function:** `testSubmitResponseInvalidOption() public`
+  - **Description:** Ensures that participants cannot select an option that does not exist in the survey.
+  - **Security Issue:** Prevents invalid option selection.
+  - **Assertions:** Expects a revert with the message "Invalid option".
+
+- **Test Reputation Overflow Attack**
+  - **Function:** `testReputationOverflow() public`
+  - **Description:** Ensures that an overflow attack is prevented when increasing user reputation.
+  - **Security Issue:** Prevents reputation overflow.
+  - **Assertions:** The increaseReputation() function within UserManager should handle overflow gracefully.
+
+- **Test Front Running Attack**
+  - **Function:** `testPreventFrontRunning() public`
+  - **Description:** Ensures that a front running attack is prevented when submitting responses with higher gas.
+  - **Security Issue:** Prevents front running attacks.
+  - **Assertions:** Verifies that the legitimate response is processed first in the responses.
+
+### RewardManagerTest
+
+- **Test Overflow Attack**
+  - **Function:** `testOverflow() public`
+  - **Description:** Ensures that an overflow attack is prevented when distributing rewards.
+  - **Security Issue:** Prevents reward overflow.
+  - **Assertions:** Expects a revert when attempting to overflow the rewards balance.
+
+- **Test Reentrancy Attack**
+  - **Function:** `testReentrancyAttack() public`
+  - **Description:** Ensures that the contract is protected against reentrancy attacks when claiming rewards.
+  - **Security Issue:** Prevents reentrancy attacks.
+  - **Assertions:** Verifies that no extra Ether is claimed through a reentrant attack.
+
+### SurveyManagerTest
+
+- **Test Survey Responses Overflow**
+  - **Function:** `testSurveyResponsesOverflow() public`
+  - **Description:** Ensures that increasing the number of responses does not cause overflow.
+  - **Security Issue:** Prevents overflow in the number of survey responses.
+  - **Assertions:** Verifies that the number of responses is correctly incremented without overflow.
+
+- **Test Only Owner Can Close Survey Manually**
+  - **Function:** `testOnlyOwnerCanCloseSurveyManually() public`
+  - **Description:** Ensures that only the survey creator can close the survey manually.
+  - **Security Issue:** Prevents unauthorized users from prematurely closing surveys.
+  - **Assertions:** Expects a revert with the message "Only the survey creator can close the survey" when an unauthorized user attempts to close the survey.
+
+- **Test Create Survey User Not Registered**
+  - **Function:** `testCreateSurveyUserNotRegistered() public`
+  - **Description:** Ensures that only registered users can create surveys.
+  - **Security Issue:** Prevents unauthorized users from creating surveys.
+  - **Assertions:** Expects a revert with the message "User not registered" when an unregistered user attempts to create a survey.
+
+- **Test Survey Creation Max Data Points Overflow**
+  - **Function:** `testSurveyCreationMaxDataPointsOverflow() public`
+  - **Description:** Ensures that creating a survey with an extremely large maxDataPoints does not cause any overflow issues.
+  - **Security Issue:** Prevents overflow in survey creation.
+  - **Assertions:** Expects a revert with the message "Max data points too large" when attempting to create a survey with an excessively large maxDataPoints.
+
 
 ## Setup
 
